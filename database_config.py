@@ -6,7 +6,6 @@ Handles both SQLite (local development) and PostgreSQL (production)
 import os
 import sqlite3
 import psycopg2
-from psycopg2.extras import RealDictCursor
 from contextlib import contextmanager
 
 class DatabaseConfig:
@@ -21,11 +20,9 @@ class DatabaseConfig:
     def get_connection(self):
         """Get appropriate database connection"""
         if self.use_postgresql:
-            return psycopg2.connect(
-                self.database_url,
-                cursor_factory=RealDictCursor,
-                sslmode='require'
-            )
+            # Railway PostgreSQL doesn't require SSL
+            # Don't use RealDictCursor to maintain compatibility with SQLite row access
+            return psycopg2.connect(self.database_url)
         else:
             conn = sqlite3.connect(self.sqlite_path)
             conn.row_factory = sqlite3.Row  # Enable dict-like access
