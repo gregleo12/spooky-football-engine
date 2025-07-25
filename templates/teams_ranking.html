@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚡ Spooky - Teams Ranking</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .back-button:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            gap: 20px;
+        }
+
+        .tab-button {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            min-width: 120px;
+        }
+
+        .tab-button.active {
+            background: rgba(255,255,255,0.9);
+            color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .tab-button:hover:not(.active) {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .ranking-container {
+            background: rgba(255,255,255,0.95);
+            border-radius: 15px;
+            padding: 0;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+        }
+
+        .ranking-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .ranking-stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 10px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            max-height: 70vh;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #f8f9fa;
+            padding: 15px 10px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #dee2e6;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        th:first-child {
+            text-align: center;
+            width: 60px;
+        }
+
+        td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #e9ecef;
+            vertical-align: middle;
+        }
+
+        td:first-child {
+            text-align: center;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .team-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .team-badge {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+
+        .team-name {
+            font-weight: 600;
+        }
+
+        .league-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        .premier-league { background: #37003c; color: white; }
+        .la-liga { background: #ee8707; color: white; }
+        .serie-a { background: #004f9e; color: white; }
+        .bundesliga { background: #d20515; color: white; }
+        .ligue-1 { background: #003366; color: white; }
+        .international { background: #28a745; color: white; }
+
+        .strength-bar {
+            width: 60px;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+
+        .strength-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745, #ffc107, #dc3545);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .parameter-cell {
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .error {
+            text-align: center;
+            padding: 40px;
+            color: #dc3545;
+            font-size: 1.1rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .tabs {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .ranking-stats {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            table {
+                font-size: 0.9rem;
+            }
+
+            th, td {
+                padding: 8px 5px;
+            }
+
+            .team-info {
+                flex-direction: column;
+                gap: 5px;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="/" class="back-button">← Back to Analyzer</a>
+    
+    <div class="container">
+        <div class="header">
+            <h1>⚡ Teams Ranking</h1>
+            <p>All teams ranked by overall strength score</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-button active" data-tab="clubs">🏆 Club Teams</button>
+            <button class="tab-button" data-tab="nations">🌍 National Teams</button>
+        </div>
+
+        <div class="ranking-container">
+            <div class="ranking-header">
+                <h2 id="current-tab-title">Club Teams Ranking</h2>
+                <div class="ranking-stats">
+                    <div class="stat">
+                        <div class="stat-number" id="total-teams">-</div>
+                        <div class="stat-label">Total Teams</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number" id="avg-strength">-</div>
+                        <div class="stat-label">Avg Strength</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <div id="loading" class="loading">Loading teams ranking...</div>
+                <div id="error" class="error" style="display: none;">Failed to load teams ranking</div>
+                
+                <table id="ranking-table" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Team</th>
+                            <th>Overall</th>
+                            <th>ELO</th>
+                            <th>Squad Value</th>
+                            <th>Form</th>
+                            <th>Depth</th>
+                            <th>H2H</th>
+                            <th>Scoring</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ranking-body">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let teamsData = null;
+        let currentTab = 'clubs';
+
+        // Tab switching
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.addEventListener('click', () => {
+                const tab = button.dataset.tab;
+                switchTab(tab);
+            });
+        });
+
+        function switchTab(tab) {
+            currentTab = tab;
+            
+            // Update tab buttons
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+            
+            // Update title
+            const title = tab === 'clubs' ? 'Club Teams Ranking' : 'National Teams Ranking';
+            document.getElementById('current-tab-title').textContent = title;
+            
+            // Render data if available
+            if (teamsData) {
+                renderRanking(teamsData[tab]);
+            }
+        }
+
+        function getLeagueClass(league) {
+            const mapping = {
+                'Premier League': 'premier-league',
+                'La Liga': 'la-liga',
+                'Serie A': 'serie-a',
+                'Bundesliga': 'bundesliga',
+                'Ligue 1': 'ligue-1',
+                'International': 'international'
+            };
+            return mapping[league] || '';
+        }
+
+        function getTeamFlag(team, league) {
+            // Team flags/badges mapping
+            const flags = {
+                // Premier League
+                'Manchester City': '🏆', 'Arsenal': '🔴', 'Liverpool': '🔴', 'Chelsea': '🔵',
+                'Manchester United': '🔴', 'Tottenham Hotspur': '⚪', 'Newcastle United': '⚫',
+                
+                // La Liga
+                'Real Madrid': '👑', 'Barcelona': '🔵', 'Atletico Madrid': '🔴',
+                
+                // Serie A
+                'Inter': '🖤', 'Juventus': '⚫', 'AC Milan': '🔴', 'Napoli': '🔵',
+                
+                // Bundesliga
+                'Bayern München': '🔴', 'Borussia Dortmund': '🟡', 'RB Leipzig': '🔴',
+                
+                // Ligue 1
+                'Paris Saint Germain': '🔵', 'Monaco': '🔴', 'Marseille': '⚪',
+                
+                // International
+                'Brazil': '🇧🇷', 'Argentina': '🇦🇷', 'France': '🇫🇷', 'England': '🏴󠁧󠁢󠁥󠁮󠁧󠁿',
+                'Spain': '🇪🇸', 'Italy': '🇮🇹', 'Germany': '🇩🇪', 'Portugal': '🇵🇹',
+                'Netherlands': '🇳🇱', 'Belgium': '🇧🇪'
+            };
+            
+            return flags[team] || (league === 'International' ? '🌍' : '⚽');
+        }
+
+        function renderRanking(teams) {
+            const tbody = document.getElementById('ranking-body');
+            tbody.innerHTML = '';
+            
+            // Update stats
+            const totalTeams = teams.length;
+            const avgStrength = teams.reduce((sum, team) => sum + team.overall_strength, 0) / totalTeams;
+            
+            document.getElementById('total-teams').textContent = totalTeams;
+            document.getElementById('avg-strength').textContent = avgStrength.toFixed(2);
+            
+            teams.forEach(team => {
+                const row = document.createElement('tr');
+                
+                // Strength bar width (normalize to 0-100%)
+                const maxStrength = Math.max(...teams.map(t => t.overall_strength));
+                const strengthPercent = (team.overall_strength / maxStrength) * 100;
+                
+                row.innerHTML = `
+                    <td>${team.rank}</td>
+                    <td>
+                        <div class="team-info">
+                            <div class="team-badge">${getTeamFlag(team.name, team.league)}</div>
+                            <div>
+                                <div class="team-name">${team.name}</div>
+                                <span class="league-badge ${getLeagueClass(team.league)}">${team.league}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="parameter-cell">
+                        <div>${team.overall_strength}</div>
+                        <div class="strength-bar">
+                            <div class="strength-fill" style="width: ${strengthPercent}%"></div>
+                        </div>
+                    </td>
+                    <td class="parameter-cell">${team.elo_score}</td>
+                    <td class="parameter-cell">${team.squad_value}</td>
+                    <td class="parameter-cell">${team.form_score}</td>
+                    <td class="parameter-cell">${team.squad_depth}</td>
+                    <td class="parameter-cell">${team.h2h_performance}</td>
+                    <td class="parameter-cell">${team.scoring_patterns}</td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+            
+            // Show table
+            document.getElementById('ranking-table').style.display = 'table';
+        }
+
+        // Load teams ranking data
+        async function loadTeamsRanking() {
+            try {
+                const response = await fetch('/api/teams-ranking');
+                if (!response.ok) throw new Error('Failed to fetch');
+                
+                teamsData = await response.json();
+                
+                document.getElementById('loading').style.display = 'none';
+                renderRanking(teamsData[currentTab]);
+                
+            } catch (error) {
+                console.error('Error loading teams ranking:', error);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('error').style.display = 'block';
+            }
+        }
+
+        // Initialize
+        loadTeamsRanking();
+    </script>
+</body>
+</html>

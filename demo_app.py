@@ -570,6 +570,81 @@ def get_team_form(team_name):
             'error': str(e)
         })
 
+@app.route('/teams-ranking')
+def teams_ranking():
+    """Teams ranking page"""
+    return render_template('teams_ranking.html')
+
+@app.route('/api/teams-ranking')
+def api_teams_ranking():
+    """API endpoint to get all teams ranked by strength"""
+    try:
+        conn = demo.get_database_connection()
+        c = conn.cursor()
+        
+        # Get all teams with their raw (non-normalized) parameter values
+        c.execute("""
+            SELECT 
+                cts.team_name,
+                c.name as league,
+                cts.overall_strength,
+                cts.elo_score,
+                cts.squad_value_score,
+                cts.form_score,
+                cts.squad_depth_score,
+                cts.h2h_performance,
+                cts.scoring_patterns
+            FROM competition_team_strength cts
+            JOIN competitions c ON cts.competition_id = c.id
+            WHERE c.name IN ('Premier League', 'La Liga', 'Serie A', 'Bundesliga', 'Ligue 1', 'International')
+            AND (cts.season = '2024' OR c.name = 'International')
+            AND cts.overall_strength IS NOT NULL
+            ORDER BY cts.overall_strength DESC
+        """)
+        
+        teams = []
+        for row in c.fetchall():
+            team_name, league, overall, elo, squad_value, form, squad_depth, h2h, scoring = row
+            
+            # Format squad value to millions
+            squad_value_formatted = f"€{squad_value:,.0f}M" if squad_value else "N/A"
+            
+            teams.append({
+                'rank': len(teams) + 1,
+                'name': team_name,
+                'league': league,
+                'overall_strength': round(overall, 2) if overall else 0,
+                'elo_score': round(elo, 0) if elo else 0,
+                'squad_value': squad_value_formatted,
+                'form_score': round(form, 2) if form else 0,
+                'squad_depth': round(squad_depth, 0) if squad_depth else 0,
+                'h2h_performance': round(h2h, 2) if h2h else 0,
+                'scoring_patterns': round(scoring, 2) if scoring else 0,
+                'is_national': league == 'International'
+            })
+        
+        conn.close()
+        
+        # Separate clubs and nations
+        clubs = [t for t in teams if not t['is_national']]
+        nations = [t for t in teams if t['is_national']]
+        
+        # Re-rank separately
+        for i, club in enumerate(clubs):
+            club['rank'] = i + 1
+        for i, nation in enumerate(nations):
+            nation['rank'] = i + 1
+        
+        return jsonify({
+            'clubs': clubs,
+            'nations': nations,
+            'total': len(teams)
+        })
+        
+    except Exception as e:
+        print(f"Error getting teams ranking: {e}")
+        return jsonify({'error': 'Failed to load teams ranking'})
+
 if __name__ == '__main__':
     # Production configuration
     port = int(os.environ.get('PORT', 5001))

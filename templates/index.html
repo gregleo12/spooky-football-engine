@@ -329,6 +329,26 @@
             color: var(--accent);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
+
+        /* Teams Ranking Button */
+        .teams-ranking-btn {
+            display: inline-block;
+            padding: 8px 16px;
+            background: rgba(0, 255, 136, 0.1);
+            color: var(--accent);
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(0, 255, 136, 0.3);
+        }
+
+        .teams-ranking-btn:hover {
+            background: rgba(0, 255, 136, 0.2);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 255, 136, 0.2);
+        }
         
         /* Match Setup Card */
         .match-setup-card {
@@ -1152,6 +1172,13 @@
                     <button class="tab-button" id="countriesTab" onclick="switchTab('countries')">
                         Nations
                     </button>
+                </div>
+                
+                <!-- Teams Ranking Button -->
+                <div style="text-align: center; margin: 15px 0;">
+                    <a href="/teams-ranking" class="teams-ranking-btn">
+                        📊 View All Teams
+                    </a>
                 </div>
                 
                 <div class="team-selection">
