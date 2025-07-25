@@ -160,7 +160,7 @@ class FootballStrengthDemo:
                 cts.squad_value_score
             FROM competition_team_strength cts
             JOIN competitions c ON cts.competition_id = c.id
-            WHERE cts.team_name = ?
+            WHERE cts.team_name = %s
         """, (team_name,))
         
         result = c.fetchone()
@@ -497,7 +497,7 @@ def get_team_form(team_name):
                 home_team_name, away_team_name, home_score, away_score,
                 match_date, competition_name
             FROM matches 
-            WHERE (home_team_name = ? OR away_team_name = ?)
+            WHERE (home_team_name = %s OR away_team_name = %s)
             AND status = 'FT'
             AND home_score IS NOT NULL 
             AND away_score IS NOT NULL
