@@ -97,13 +97,7 @@ class FootballStrengthDemo:
                 c.name as league,
                 cts.team_name,
                 cts.local_league_strength,
-                cts.european_strength
-            FROM competition_team_strength cts
-            JOIN competitions c ON cts.competition_id = c.id
-            WHERE c.name IN ('Premier League', 'La Liga', 'Serie A', 'Bundesliga', 'Ligue 1', 'International')
-            AND (cts.season = '2024' OR c.name = 'International')
-            AND cts.local_league_strength IS NOT NULL
-            ORDER BY 
+                cts.european_strength,
                 CASE c.name
                     WHEN 'Premier League' THEN 1
                     WHEN 'La Liga' THEN 2
@@ -111,8 +105,13 @@ class FootballStrengthDemo:
                     WHEN 'Bundesliga' THEN 4
                     WHEN 'Ligue 1' THEN 5
                     WHEN 'International' THEN 6
-                END,
-                cts.team_name
+                END as league_order
+            FROM competition_team_strength cts
+            JOIN competitions c ON cts.competition_id = c.id
+            WHERE c.name IN ('Premier League', 'La Liga', 'Serie A', 'Bundesliga', 'Ligue 1', 'International')
+            AND (cts.season = '2024' OR c.name = 'International')
+            AND cts.local_league_strength IS NOT NULL
+            ORDER BY league_order, cts.team_name
         """)
         
         # Use ordered structure to maintain league order
@@ -126,7 +125,7 @@ class FootballStrengthDemo:
         for league in league_order:
             teams_by_league[league] = []
         
-        for league, team, local, european in c.fetchall():
+        for league, team, local, european, league_order in c.fetchall():
             # Create unique key for this team-league combination
             team_key = f"{team}_{league}"
             
