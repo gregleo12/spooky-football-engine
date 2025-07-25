@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python:*)",
+      "Bash(rm:*)",
+      "Bash(sqlite3:*)",
+      "Bash(source:*)",
+      "WebFetch(domain:www.transfermarkt.us)",
+      "WebFetch(domain:pooky.webflow.io)",
+      "Bash(lsof:*)",
+      "Bash(chmod:*)",
+      "Bash(pkill:*)",
+      "Bash(true)",
+      "Bash(brew install:*)",
+      "Bash(ngrok:*)",
+      "Bash(echo:*)",
+      "Bash(curl:*)"
+    ],
+    "deny": []
+  }
+}

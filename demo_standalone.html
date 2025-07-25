@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Football Strength Analyzer - Standalone Demo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --bg-primary: #0a0e1a;
+            --bg-secondary: #141929;
+            --bg-card: #1a1f36;
+            --accent-primary: #5b68f5;
+            --accent-secondary: #ff6b6b;
+            --text-primary: #ffffff;
+            --text-secondary: #a8b3cf;
+            --border-color: #2a3347;
+            --success: #4ecdc4;
+            --warning: #f7c94b;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+        
+        .header {
+            padding: 48px 0 64px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 48px;
+            font-weight: 900;
+            letter-spacing: -0.02em;
+            margin-bottom: 16px;
+        }
+        
+        .subtitle {
+            font-size: 18px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        
+        .demo-notice {
+            background: var(--accent-primary);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            text-align: center;
+            margin: 32px auto;
+            max-width: 600px;
+            font-weight: 600;
+        }
+        
+        .match-setup {
+            background: var(--bg-card);
+            border-radius: 24px;
+            padding: 48px;
+            margin-bottom: 32px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .team-selection {
+            display: grid;
+            grid-template-columns: 1fr 120px 1fr;
+            gap: 32px;
+            align-items: center;
+            margin-bottom: 48px;
+        }
+        
+        select {
+            width: 100%;
+            padding: 16px 20px;
+            font-size: 16px;
+            font-weight: 500;
+            font-family: inherit;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            cursor: pointer;
+        }
+        
+        .vs-divider {
+            text-align: center;
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--text-secondary);
+        }
+        
+        .results-preview {
+            background: var(--bg-card);
+            border-radius: 24px;
+            padding: 48px;
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+        
+        .results-preview h2 {
+            font-size: 28px;
+            margin-bottom: 16px;
+        }
+        
+        .results-preview p {
+            color: var(--text-secondary);
+            font-size: 16px;
+            line-height: 1.6;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-top: 48px;
+        }
+        
+        .feature-card {
+            background: var(--bg-secondary);
+            padding: 32px;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .feature-card h3 {
+            font-size: 20px;
+            margin-bottom: 12px;
+            color: var(--accent-primary);
+        }
+        
+        .feature-card p {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚡ Football Strength Analyzer</h1>
+            <p class="subtitle">Powered by dual scoring system across Europe's top 5 leagues</p>
+        </div>
+        
+        <div class="demo-notice">
+            ⚠️ This is a standalone preview. For the full interactive experience, the Flask server needs to be running.
+        </div>
+        
+        <div class="match-setup">
+            <h2 style="text-align: center; margin-bottom: 32px;">MATCH SETUP</h2>
+            
+            <div class="team-selection">
+                <select>
+                    <option>Select Home Team</option>
+                    <optgroup label="Premier League">
+                        <option>Manchester City</option>
+                        <option>Arsenal</option>
+                        <option>Liverpool</option>
+                        <option>Chelsea</option>
+                    </optgroup>
+                    <optgroup label="La Liga">
+                        <option>Real Madrid</option>
+                        <option>Barcelona</option>
+                        <option>Atletico Madrid</option>
+                    </optgroup>
+                </select>
+                
+                <div class="vs-divider">VS</div>
+                
+                <select>
+                    <option>Select Away Team</option>
+                    <optgroup label="Serie A">
+                        <option>Inter</option>
+                        <option>AC Milan</option>
+                        <option>Napoli</option>
+                    </optgroup>
+                    <optgroup label="Bundesliga">
+                        <option>Bayern München</option>
+                        <option>Borussia Dortmund</option>
+                    </optgroup>
+                </select>
+            </div>
+        </div>
+        
+        <div class="results-preview">
+            <h2>How It Works</h2>
+            <p>
+                This football strength analyzer uses a sophisticated dual scoring system to predict match outcomes.
+                For same-league matches, it uses local league strength scores (normalized within each league).
+                For cross-league matches, it uses European strength scores (normalized across all 96 teams).
+            </p>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3>📊 Dual Scoring System</h3>
+                    <p>Local League Strength (0-100% within league) and European Strength (0-100% across all teams)</p>
+                </div>
+                <div class="feature-card">
+                    <h3>⚡ Real-Time Analysis</h3>
+                    <p>Instant strength comparison with win probabilities based on weighted parameters</p>
+                </div>
+                <div class="feature-card">
+                    <h3>🏆 96 Teams Covered</h3>
+                    <p>Complete coverage of Premier League, La Liga, Serie A, Bundesliga, and Ligue 1</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
