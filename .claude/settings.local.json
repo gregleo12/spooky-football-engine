@@ -14,7 +14,17 @@
       "Bash(brew install:*)",
       "Bash(ngrok:*)",
       "Bash(echo:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(pip3 install:*)",
+      "Bash(DATABASE_URL=\"postgresql://postgres:WJFojeyIZjCfJlRscgARcdrFAqDXKJhT@ballast.proxy.rlwy.net:10971/railway\" python3 migrate_to_postgresql.py)",
+      "Bash(DATABASE_URL=\"postgresql://postgres:WJFojeyIZjCfJlRscgARcdrFAqDXKJhT@ballast.proxy.rlwy.net:10971/railway\" timeout 30 python3 migrate_to_postgresql.py)",
+      "WebFetch(domain:web-production-18fb.up.railway.app)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(mkdir:*)",
+      "Bash(mv:*)",
+      "Bash(ls:*)"
     ],
     "deny": []
   }
