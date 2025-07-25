@@ -9,7 +9,6 @@ A simple Flask web app that demonstrates the dual strength scoring system:
 - Displays match prediction and strength comparison
 """
 from flask import Flask, render_template, request, jsonify
-import sqlite3
 import os
 import json
 from database_config import db_config
@@ -190,11 +189,9 @@ class FootballStrengthDemo:
             if not away_data:
                 return {'error': f'Team data not found for {away_team}'}
                 
-        except sqlite3.OperationalError:
-            return {'error': 'Database connection failed - please try again'}
         except Exception as e:
             print(f"Error getting team data: {e}")
-            return {'error': 'Unable to retrieve team data - please try again'}
+            return {'error': 'Database connection failed - please try again'}
         
         # Determine if same league or cross-league or international
         same_league = home_data['league'] == away_data['league']
@@ -278,11 +275,9 @@ def analyze_match():
         result = demo.analyze_match(home_team, away_team)
         return jsonify(result)
         
-    except sqlite3.OperationalError as e:
-        return jsonify({'error': 'Database connection failed - please try again'})
     except Exception as e:
         print(f"Analysis error: {e}")
-        return jsonify({'error': 'Analysis temporarily unavailable - please try again'})
+        return jsonify({'error': 'Database connection failed - please try again'})
 
 @app.route('/api/teams')
 def api_teams():
