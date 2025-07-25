@@ -587,7 +587,13 @@ def api_teams_ranking():
             SELECT 
                 cts.team_name,
                 c.name as league,
-                cts.overall_strength,
+                COALESCE(cts.overall_strength, 
+                    (COALESCE(cts.elo_score, 0) * 0.18 + 
+                     COALESCE(cts.squad_value_score, 0) * 0.15 + 
+                     COALESCE(cts.form_score, 0) * 0.05 + 
+                     COALESCE(cts.squad_depth_score, 0) * 0.02 + 
+                     COALESCE(cts.h2h_performance, 0) * 0.04 + 
+                     COALESCE(cts.scoring_patterns, 0) * 0.03)) as calculated_strength,
                 cts.elo_score,
                 cts.squad_value_score,
                 cts.form_score,
@@ -598,16 +604,19 @@ def api_teams_ranking():
             JOIN competitions c ON cts.competition_id = c.id
             WHERE c.name IN ('Premier League', 'La Liga', 'Serie A', 'Bundesliga', 'Ligue 1', 'International')
             AND (cts.season = '2024' OR c.name = 'International')
-            AND cts.overall_strength IS NOT NULL
-            ORDER BY cts.overall_strength DESC
+            AND (cts.overall_strength IS NOT NULL OR c.name = 'International')
+            ORDER BY calculated_strength DESC
         """)
         
         teams = []
         for row in c.fetchall():
             team_name, league, overall, elo, squad_value, form, squad_depth, h2h, scoring = row
             
-            # Format squad value to millions
-            squad_value_formatted = f"€{squad_value:,.0f}M" if squad_value else "N/A"
+            # Format squad value - for national teams, show raw score, for clubs show millions
+            if league == 'International':
+                squad_value_formatted = f"{round(squad_value, 2)}" if squad_value else "N/A"
+            else:
+                squad_value_formatted = f"€{squad_value:,.0f}M" if squad_value else "N/A"
             
             teams.append({
                 'rank': len(teams) + 1,
@@ -617,7 +626,7 @@ def api_teams_ranking():
                 'elo_score': round(elo, 0) if elo else 0,
                 'squad_value': squad_value_formatted,
                 'form_score': round(form, 2) if form else 0,
-                'squad_depth': round(squad_depth, 0) if squad_depth else 0,
+                'squad_depth': round(squad_depth, 1) if squad_depth else 0,
                 'h2h_performance': round(h2h, 2) if h2h else 0,
                 'scoring_patterns': round(scoring, 2) if scoring else 0,
                 'is_national': league == 'International'

@@ -2,64 +2,156 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>⚡ Spooky - Teams Ranking</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --bg-primary: #050510;
+            --bg-secondary: #0a0a1a;
+            --bg-card: #131322;
+            --bg-hover: #1a1a2e;
+            --accent: #00ff88;
+            --accent-hover: #00cc6a;
+            --purple: #7c3aed;
+            --blue: #3b82f6;
+            --text-primary: #ffffff;
+            --text-secondary: #71717a;
+            --border: #1e1e2e;
+            --success: #10b981;
+            --danger: #ef4444;
+            --gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-2: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+            --gradient-bg: linear-gradient(180deg, #050510 0%, #0a0a1a 100%);
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
             min-height: 100vh;
-            color: #333;
+            position: relative;
+        }
+
+        /* Background Effects */
+        .bg-gradient {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--gradient-bg);
+            z-index: -3;
+        }
+
+        .bg-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: radial-gradient(circle at 2px 2px, rgba(255,255,255,0.03) 1px, transparent 0);
+            background-size: 40px 40px;
+            z-index: -2;
+        }
+
+        .bg-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0,255,136,0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,255,136,0.1) 1px, transparent 1px);
+            background-size: 60px 60px;
+            z-index: -1;
+            opacity: 0.3;
         }
 
         .container {
             max-width: 1400px;
             margin: 0 auto;
             padding: 20px;
+            position: relative;
+            z-index: 1;
         }
 
         .header {
             text-align: center;
             margin-bottom: 30px;
-            color: white;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--gradient-2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--bg-primary);
+            box-shadow: 0 4px 16px rgba(0, 255, 136, 0.3);
         }
 
         .header h1 {
             font-size: 2.5rem;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            font-weight: 800;
+            background: var(--gradient-2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
         }
 
-        .header p {
+        .header-subtitle {
+            color: var(--text-secondary);
             font-size: 1.1rem;
-            opacity: 0.9;
+            font-weight: 500;
         }
 
         .back-button {
             position: absolute;
             top: 20px;
             left: 20px;
-            background: rgba(255,255,255,0.2);
-            color: white;
-            border: none;
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
             padding: 10px 15px;
-            border-radius: 8px;
+            border-radius: 12px;
             cursor: pointer;
             font-size: 1rem;
             transition: all 0.3s ease;
             text-decoration: none;
             display: inline-block;
+            backdrop-filter: blur(10px);
         }
 
         .back-button:hover {
-            background: rgba(255,255,255,0.3);
+            background: var(--bg-hover);
+            border-color: var(--accent);
             transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0, 255, 136, 0.2);
         }
 
         .tabs {
@@ -67,14 +159,22 @@
             justify-content: center;
             margin-bottom: 30px;
             gap: 20px;
+            background: var(--bg-card);
+            padding: 8px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            backdrop-filter: blur(10px);
+            width: fit-content;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .tab-button {
-            background: rgba(255,255,255,0.2);
-            color: white;
+            background: transparent;
+            color: var(--text-secondary);
             border: none;
             padding: 12px 24px;
-            border-radius: 25px;
+            border-radius: 12px;
             cursor: pointer;
             font-size: 1rem;
             font-weight: 600;
@@ -83,29 +183,30 @@
         }
 
         .tab-button.active {
-            background: rgba(255,255,255,0.9);
-            color: #667eea;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            background: var(--accent);
+            color: var(--bg-primary);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(0, 255, 136, 0.3);
         }
 
         .tab-button:hover:not(.active) {
-            background: rgba(255,255,255,0.3);
+            color: var(--text-primary);
+            background: var(--bg-hover);
         }
 
         .ranking-container {
-            background: rgba(255,255,255,0.95);
-            border-radius: 15px;
+            background: var(--bg-card);
+            border-radius: 20px;
             padding: 0;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            border: 1px solid var(--border);
             backdrop-filter: blur(10px);
             overflow: hidden;
         }
 
         .ranking-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
+            background: var(--gradient-1);
+            color: var(--text-primary);
+            padding: 24px;
             text-align: center;
         }
 
@@ -141,11 +242,12 @@
         }
 
         th {
-            background: #f8f9fa;
+            background: var(--bg-secondary);
             padding: 15px 10px;
             text-align: left;
             font-weight: 600;
-            border-bottom: 2px solid #dee2e6;
+            color: var(--text-primary);
+            border-bottom: 2px solid var(--border);
             position: sticky;
             top: 0;
             z-index: 10;
@@ -158,18 +260,19 @@
 
         td {
             padding: 12px 10px;
-            border-bottom: 1px solid #e9ecef;
+            border-bottom: 1px solid var(--border);
             vertical-align: middle;
+            color: var(--text-primary);
         }
 
         td:first-child {
             text-align: center;
             font-weight: bold;
-            color: #667eea;
+            color: var(--accent);
         }
 
         tr:hover {
-            background-color: #f8f9fa;
+            background-color: var(--bg-hover);
         }
 
         .team-info {
@@ -281,12 +384,19 @@
     </style>
 </head>
 <body>
+    <div class="bg-gradient"></div>
+    <div class="bg-pattern"></div>
+    <div class="bg-grid"></div>
+    
     <a href="/" class="back-button">← Back to Analyzer</a>
     
     <div class="container">
         <div class="header">
-            <h1>⚡ Teams Ranking</h1>
-            <p>All teams ranked by overall strength score</p>
+            <div class="logo">
+                <div class="logo-icon">⚡</div>
+            </div>
+            <h1>Spooky</h1>
+            <p class="header-subtitle">Teams Ranking - All teams by strength score</p>
         </div>
 
         <div class="tabs">
