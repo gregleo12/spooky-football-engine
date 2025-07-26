@@ -29,3 +29,15 @@ playwright==1.54.0
 pyee==13.0.0
 greenlet==3.2.3
 typing_extensions==4.14.1
+
+# Phase 3 Machine Learning Dependencies
+scikit-learn==1.4.2
+numpy==1.26.4
+pandas==2.2.2
+joblib==1.4.2
+
+# Phase 3 Real-time API Dependencies
+fastapi==0.111.0
+uvicorn==0.30.1
+pydantic==2.7.4
+asyncio==3.4.3

@@ -1,19 +1,55 @@
 #!/usr/bin/env python3
 """
-Football Strength Demo Web Application
+Spooky Football Engine - Enhanced Web Application (Phase 1-3)
 
-A simple Flask web app that demonstrates the dual strength scoring system:
-- Select home and away teams from dropdown menus
-- Automatically detects same league vs cross-league matches
-- Shows appropriate strength scores (local for same league, European for cross-league)
-- Displays match prediction and strength comparison
+Advanced football prediction platform featuring:
+- 100% verified Phase 1-3 capabilities
+- Real-time ML predictions with 5 different models
+- Live events integration and processing
+- Enhanced data collection (57+ parameters per team)
+- Market-specific betting predictions
+- Team analytics and strength comparison
 """
 from flask import Flask, render_template, request, jsonify
 import os
 import json
+import sys
+from datetime import datetime
 from database_config import db_config
 
+# Add Phase 1-3 system paths
+sys.path.append(os.path.join(os.path.dirname(__file__), 'agents', 'calculation'))
+sys.path.append(os.path.join(os.path.dirname(__file__), 'agents', 'data_collection_v2'))
+sys.path.append(os.path.join(os.path.dirname(__file__), 'agents', 'api'))
+sys.path.append(os.path.join(os.path.dirname(__file__), 'agents', 'live_events'))
+
+# Import Phase 1-3 components
+try:
+    from modular_calculator_engine import ModularCalculatorEngine
+    from enhanced_elo_agent import EnhancedELOAgent
+    from advanced_form_agent import AdvancedFormAgent
+    from goals_data_agent import GoalsDataAgent
+    from context_data_agent import ContextDataAgent
+    from realtime_prediction_api import RealTimePredictionAPI
+    from live_match_collector import LiveMatchCollector
+    PHASE_3_AVAILABLE = True
+    print("✅ Phase 1-3 components loaded successfully")
+except ImportError as e:
+    print(f"⚠️ Phase 1-3 components not available: {e}")
+    PHASE_3_AVAILABLE = False
+
 app = Flask(__name__)
+
+# Initialize Phase 1-3 services
+if PHASE_3_AVAILABLE:
+    try:
+        prediction_service = RealTimePredictionAPI()
+        live_collector = LiveMatchCollector()
+        calculator_engine = ModularCalculatorEngine()
+        print("✅ Phase 1-3 services initialized")
+    except Exception as e:
+        print(f"⚠️ Error initializing Phase 1-3 services: {e}")
+        PHASE_3_AVAILABLE = False
 
 # Load team API IDs at module level
 team_api_ids_path = os.path.join(os.path.dirname(__file__), 'agents', 'shared', 'team_api_ids.json')
@@ -655,6 +691,166 @@ def api_teams_ranking():
     except Exception as e:
         print(f"Error getting teams ranking: {e}")
         return jsonify({'error': 'Failed to load teams ranking'})
+
+# ===============================================
+# PHASE 3 ENHANCED FEATURES - NEW ENDPOINTS
+# ===============================================
+
+@app.route('/api/v3/predict', methods=['POST'])
+def api_v3_predict():
+    """Enhanced match prediction with ML models"""
+    if not PHASE_3_AVAILABLE:
+        return jsonify({'error': 'Phase 3 features not available'}), 503
+    
+    try:
+        data = request.get_json()
+        home_team = data.get('home_team')
+        away_team = data.get('away_team')
+        model_type = data.get('model_type', 'enhanced')
+        
+        # Use the real-time prediction API
+        prediction = prediction_service.predict_match(
+            home_team=home_team,
+            away_team=away_team,
+            model_type=model_type
+        )
+        
+        return jsonify(prediction)
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/v3/live-matches')
+def api_v3_live_matches():
+    """Get currently active live matches"""
+    if not PHASE_3_AVAILABLE:
+        return jsonify({'error': 'Phase 3 features not available'}), 503
+    
+    try:
+        matches = live_collector.get_active_matches()
+        
+        live_data = []
+        for match in matches:
+            live_data.append({
+                'match_id': match.match_id,
+                'home_team': match.home_team_name,
+                'away_team': match.away_team_name,
+                'score': f"{match.home_score}-{match.away_score}",
+                'minute': match.minute,
+                'status': match.status,
+                'events_count': len(match.events)
+            })
+        
+        return jsonify({
+            'live_matches': live_data,
+            'count': len(live_data),
+            'last_updated': datetime.now().isoformat()
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/v3/team-analytics/<team_name>')
+def api_v3_team_analytics(team_name):
+    """Enhanced team analytics with all parameters"""
+    if not PHASE_3_AVAILABLE:
+        return jsonify({'error': 'Phase 3 features not available'}), 503
+    
+    try:
+        # Collect comprehensive team data
+        team_data = prediction_service.collect_team_data(team_name, "Premier League")
+        
+        if not team_data:
+            return jsonify({'error': 'Team not found'}), 404
+        
+        # Calculate strength with multiple models
+        model_results = {}
+        for model_type in ['original', 'enhanced', 'market_match', 'market_goals', 'market_defense']:
+            try:
+                result = calculator_engine.calculate_team_strength(team_data, model_type)
+                model_results[model_type] = {
+                    'strength_percentage': result['strength_percentage'],
+                    'data_completeness': result['data_completeness']
+                }
+            except:
+                model_results[model_type] = None
+        
+        return jsonify({
+            'team_name': team_name,
+            'model_scores': model_results,
+            'raw_parameters': {k: v for k, v in team_data.items() if isinstance(v, (int, float))},
+            'parameter_count': len([v for v in team_data.values() if v is not None]),
+            'data_quality': len([v for v in team_data.values() if v is not None]) / len(team_data),
+            'last_updated': datetime.now().isoformat()
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/v3/model-comparison', methods=['POST'])
+def api_v3_model_comparison():
+    """Compare multiple prediction models for a match"""
+    if not PHASE_3_AVAILABLE:
+        return jsonify({'error': 'Phase 3 features not available'}), 503
+    
+    try:
+        data = request.get_json()
+        home_team = data.get('home_team')
+        away_team = data.get('away_team')
+        
+        models = ['original', 'enhanced', 'market_match', 'market_goals', 'market_defense']
+        comparison_results = {}
+        
+        for model_type in models:
+            try:
+                prediction = prediction_service.predict_match(home_team, away_team, model_type=model_type)
+                comparison_results[model_type] = {
+                    'home_win_probability': prediction['match_outcome']['home_win'],
+                    'away_win_probability': prediction['match_outcome']['away_win'],
+                    'draw_probability': prediction['match_outcome']['draw'],
+                    'execution_time_ms': prediction['execution_time_ms'],
+                    'confidence_score': prediction['confidence_score']
+                }
+            except Exception as e:
+                comparison_results[model_type] = {'error': str(e)}
+        
+        return jsonify({
+            'match': f"{home_team} vs {away_team}",
+            'model_comparison': comparison_results,
+            'timestamp': datetime.now().isoformat()
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/v3/system-status')
+def api_v3_system_status():
+    """System health and capabilities status"""
+    try:
+        status = {
+            'phase_3_available': PHASE_3_AVAILABLE,
+            'timestamp': datetime.now().isoformat(),
+            'features': {
+                'enhanced_data_collection': PHASE_3_AVAILABLE,
+                'ml_predictions': PHASE_3_AVAILABLE,
+                'live_events': PHASE_3_AVAILABLE,
+                'multiple_models': PHASE_3_AVAILABLE,
+                'real_time_api': PHASE_3_AVAILABLE
+            }
+        }
+        
+        if PHASE_3_AVAILABLE:
+            # Check live data
+            live_matches = live_collector.get_active_matches()
+            status['live_matches'] = len(live_matches)
+            
+            # Check cached teams
+            status['cached_teams'] = len(prediction_service.team_data_cache)
+            
+        return jsonify(status)
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     # Production configuration

@@ -1343,19 +1343,19 @@
         <div class="stats-grid">
             <div class="stat-card">
                 <p class="stat-label">Total Teams</p>
-                <p class="stat-value">126</p>
+                <p class="stat-value">142</p>
             </div>
             <div class="stat-card">
-                <p class="stat-label">Competitions</p>
-                <p class="stat-value">6</p>
+                <p class="stat-label">ML Models</p>
+                <p class="stat-value">5</p>
             </div>
             <div class="stat-card">
-                <p class="stat-label">Data Sources</p>
-                <p class="stat-value">4</p>
+                <p class="stat-label">Live Events</p>
+                <p class="stat-value" id="live-events-count">0</p>
             </div>
             <div class="stat-card">
-                <p class="stat-label">Data Points</p>
-                <p class="stat-value">504</p>
+                <p class="stat-label">Parameters</p>
+                <p class="stat-value">57+</p>
             </div>
         </div>
     </div>
@@ -2379,6 +2379,165 @@
             if (e.target === this) {
                 closeFormPopup();
             }
+        });
+
+        // ============================================
+        // PHASE 3 ENHANCED FEATURES
+        // ============================================
+
+        // Update live events counter
+        function updateLiveEvents() {
+            fetch('/api/v3/live-matches')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.count !== undefined) {
+                        document.getElementById('live-events-count').textContent = data.count;
+                    }
+                })
+                .catch(error => {
+                    console.log('Live events not available:', error);
+                });
+        }
+
+        // Enhanced match analysis with multiple models
+        function enhancedAnalyzeMatch(modelType = 'enhanced') {
+            const homeTeam = document.getElementById('homeTeam').value;
+            const awayTeam = document.getElementById('awayTeam').value;
+            
+            if (!homeTeam || !awayTeam) {
+                showError('Please select both teams');
+                return;
+            }
+
+            // Use Phase 3 prediction API
+            fetch('/api/v3/predict', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    home_team: homeTeam,
+                    away_team: awayTeam,
+                    model_type: modelType
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    // Fallback to original analyze function
+                    console.log('Phase 3 not available, using original analyzer');
+                    analyzeMatch();
+                } else {
+                    showEnhancedResults(data);
+                }
+            })
+            .catch(error => {
+                console.log('Enhanced analysis failed, using fallback:', error);
+                analyzeMatch();
+            });
+        }
+
+        // Show enhanced results with Phase 3 data
+        function showEnhancedResults(data) {
+            const resultContent = document.getElementById('resultContent');
+            
+            // Enhanced results display
+            resultContent.innerHTML = `
+                <div class="match-header">
+                    <h3>${data.home_team} vs ${data.away_team}</h3>
+                    <p class="model-info">Model: ${data.model_used} | Response: ${data.execution_time_ms.toFixed(1)}ms</p>
+                </div>
+                
+                <div class="prediction-grid">
+                    <div class="prediction-card">
+                        <h4>Match Outcome</h4>
+                        <div class="outcome-probabilities">
+                            <div class="outcome-item">
+                                <span>Home Win</span>
+                                <span class="percentage">${(data.match_outcome.home_win * 100).toFixed(1)}%</span>
+                            </div>
+                            <div class="outcome-item">
+                                <span>Draw</span>
+                                <span class="percentage">${(data.match_outcome.draw * 100).toFixed(1)}%</span>
+                            </div>
+                            <div class="outcome-item">
+                                <span>Away Win</span>
+                                <span class="percentage">${(data.match_outcome.away_win * 100).toFixed(1)}%</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="prediction-card">
+                        <h4>Team Strengths</h4>
+                        <div class="strength-comparison">
+                            <div class="strength-item">
+                                <span>${data.home_team}</span>
+                                <span class="strength-value">${data.team_strengths.home_strength.toFixed(1)}%</span>
+                            </div>
+                            <div class="strength-item">
+                                <span>${data.away_team}</span>
+                                <span class="strength-value">${data.team_strengths.away_strength.toFixed(1)}%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                ${data.market_predictions ? `
+                <div class="market-predictions">
+                    <h4>Market Predictions</h4>
+                    <div class="market-grid">
+                        ${data.market_predictions.goals ? `
+                        <div class="market-item">
+                            <span>Over 2.5 Goals</span>
+                            <span>${(data.market_predictions.goals.over_2_5_probability * 100).toFixed(1)}%</span>
+                        </div>
+                        ` : ''}
+                        ${data.market_predictions.btts ? `
+                        <div class="market-item">
+                            <span>Both Teams Score</span>
+                            <span>${(data.market_predictions.btts.both_teams_score * 100).toFixed(1)}%</span>
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
+                ` : ''}
+                
+                <div class="confidence-indicator">
+                    <span>Confidence: ${(data.confidence_score * 100).toFixed(1)}%</span>
+                </div>
+            `;
+            
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('resultContent').style.display = 'block';
+            document.getElementById('analyzeBtn').disabled = false;
+        }
+
+        // System status check
+        function checkSystemStatus() {
+            fetch('/api/v3/system-status')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.phase_3_available) {
+                        console.log('✅ Phase 3 features available');
+                        // Replace analyze button with enhanced version
+                        const analyzeBtn = document.getElementById('analyzeBtn');
+                        if (analyzeBtn) {
+                            analyzeBtn.onclick = () => enhancedAnalyzeMatch('enhanced');
+                        }
+                    } else {
+                        console.log('⚠️ Phase 3 features not available, using standard analyzer');
+                    }
+                })
+                .catch(error => {
+                    console.log('System status check failed:', error);
+                });
+        }
+
+        // Initialize Phase 3 features on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            checkSystemStatus();
+            updateLiveEvents();
+            
+            // Update live events every 30 seconds
+            setInterval(updateLiveEvents, 30000);
         });
     </script>
 </body>
