@@ -313,12 +313,41 @@ def index():
 @app.route('/health')
 def health_check():
     """Simple health check endpoint"""
+    # Check database tables
+    db_info = ""
+    try:
+        conn = db_config.get_connection()
+        c = conn.cursor()
+        
+        # Check teams table
+        c.execute("SELECT COUNT(*) FROM teams")
+        team_count = c.fetchone()[0]
+        db_info += f"<p>Teams in database: {team_count}</p>"
+        
+        # Check competitions table
+        c.execute("SELECT COUNT(*) FROM competitions")
+        comp_count = c.fetchone()[0]
+        db_info += f"<p>Competitions: {comp_count}</p>"
+        
+        # Check competition_team_strength table
+        c.execute("SELECT COUNT(*) FROM competition_team_strength")
+        strength_count = c.fetchone()[0]
+        db_info += f"<p>Team strength records: {strength_count}</p>"
+        
+        conn.close()
+    except Exception as e:
+        db_info = f"<p style='color: red;'>Database error: {str(e)}</p>"
+    
     return f"""
     <h1>🟢 Spooky Engine Health Check</h1>
     <p>Environment: {env_config.environment.value}</p>
     <p>Database: {env_config.database_type}</p>
     <p>Phase 3: {PHASE_3_AVAILABLE}</p>
     <p>Time: {datetime.now().isoformat()}</p>
+    <hr>
+    <h2>📊 Database Status:</h2>
+    {db_info}
+    <hr>
     <a href="/">← Back to App</a>
     """
 
