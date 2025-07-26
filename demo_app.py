@@ -373,6 +373,164 @@ def test_ui():
     
     return html
 
+@app.route('/v3')
+def index_v3():
+    """Phase 3 version with inline template to bypass caching"""
+    teams_by_league, all_teams = demo.get_all_teams()
+    
+    # Convert to JSON for JavaScript
+    teams_json = json.dumps({
+        'byLeague': {league: teams for league, teams in teams_by_league.items()},
+        'all': all_teams
+    })
+    
+    return f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Spooky Engine v3 - Phase 3</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            body {{ background: #050510; color: white; font-family: Arial, sans-serif; padding: 20px; }}
+            .container {{ max-width: 1200px; margin: 0 auto; }}
+            .header {{ text-align: center; margin-bottom: 30px; }}
+            .stats {{ display: flex; gap: 20px; justify-content: center; margin: 20px 0; }}
+            .stat-card {{ background: #1a1a2e; padding: 20px; border-radius: 8px; text-align: center; }}
+            .team-select {{ background: #1a1a2e; padding: 20px; border-radius: 8px; margin: 20px 0; }}
+            select {{ width: 100%; padding: 10px; margin: 10px 0; }}
+            button {{ background: #00ff88; color: black; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }}
+            button:hover {{ background: #00cc6a; }}
+            #result {{ margin-top: 20px; padding: 20px; background: #1a1a2e; border-radius: 8px; }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>🎯 Spooky Football Engine v3</h1>
+                <p>Phase 3 - ML Predictions & Live Events</p>
+                <p>Generated: {datetime.now().isoformat()}</p>
+            </div>
+            
+            <div class="stats">
+                <div class="stat-card">
+                    <h3>Total Teams</h3>
+                    <p>{len(all_teams)}</p>
+                </div>
+                <div class="stat-card">
+                    <h3>ML Models</h3>
+                    <p>5</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Live Events</h3>
+                    <p id="live-count">0</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Phase 3</h3>
+                    <p>{'✅ Active' if PHASE_3_AVAILABLE else '❌ Inactive'}</p>
+                </div>
+            </div>
+            
+            <div class="team-select">
+                <h2>Select Teams for Analysis</h2>
+                <div>
+                    <label>Home Team:</label>
+                    <select id="homeTeam">
+                        <option value="">Select Home Team</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Away Team:</label>
+                    <select id="awayTeam">
+                        <option value="">Select Away Team</option>
+                    </select>
+                </div>
+                <div style="margin-top: 20px;">
+                    <button onclick="analyzeMatch()">Analyze Match (Phase 3)</button>
+                </div>
+            </div>
+            
+            <div id="result"></div>
+        </div>
+        
+        <script>
+            const teamsData = {teams_json};
+            
+            // Populate dropdowns
+            const homeSelect = document.getElementById('homeTeam');
+            const awaySelect = document.getElementById('awayTeam');
+            
+            teamsData.all.forEach(team => {{
+                const option1 = new Option(team.name + ' (' + team.league + ')', team.name);
+                const option2 = new Option(team.name + ' (' + team.league + ')', team.name);
+                homeSelect.add(option1);
+                awaySelect.add(option2);
+            }});
+            
+            function analyzeMatch() {{
+                const home = document.getElementById('homeTeam').value;
+                const away = document.getElementById('awayTeam').value;
+                
+                if (!home || !away) {{
+                    alert('Please select both teams');
+                    return;
+                }}
+                
+                document.getElementById('result').innerHTML = 'Loading...';
+                
+                // Try Phase 3 API
+                fetch('/api/v3/predict', {{
+                    method: 'POST',
+                    headers: {{ 'Content-Type': 'application/json' }},
+                    body: JSON.stringify({{ home_team: home, away_team: away }})
+                }})
+                .then(response => response.json())
+                .then(data => {{
+                    if (data.error) {{
+                        // Fallback to v1
+                        return fetch('/analyze', {{
+                            method: 'POST',
+                            headers: {{ 'Content-Type': 'application/json' }},
+                            body: JSON.stringify({{ home_team: home, away_team: away }})
+                        }}).then(r => r.json());
+                    }}
+                    return data;
+                }})
+                .then(data => {{
+                    let html = '<h3>Match Analysis</h3>';
+                    if (data.match_outcome) {{
+                        html += '<h4>ML Predictions (Phase 3):</h4>';
+                        html += '<p>Home Win: ' + (data.match_outcome.home_win * 100).toFixed(1) + '%</p>';
+                        html += '<p>Draw: ' + (data.match_outcome.draw * 100).toFixed(1) + '%</p>';
+                        html += '<p>Away Win: ' + (data.match_outcome.away_win * 100).toFixed(1) + '%</p>';
+                    }} else {{
+                        html += '<h4>Strength Analysis (v1):</h4>';
+                        html += '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                    }}
+                    document.getElementById('result').innerHTML = html;
+                }})
+                .catch(error => {{
+                    document.getElementById('result').innerHTML = 'Error: ' + error;
+                }});
+            }}
+            
+            // Update live count
+            function updateLiveCount() {{
+                fetch('/api/v3/live-matches')
+                    .then(response => response.json())
+                    .then(data => {{
+                        document.getElementById('live-count').textContent = data.count || 0;
+                    }})
+                    .catch(() => {{}});
+            }}
+            
+            updateLiveCount();
+            setInterval(updateLiveCount, 30000);
+        </script>
+    </body>
+    </html>
+    """
+
 @app.route('/version')
 def version_check():
     """Version check endpoint"""
