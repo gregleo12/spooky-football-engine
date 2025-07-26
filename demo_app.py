@@ -348,8 +348,51 @@ def health_check():
     <h2>📊 Database Status:</h2>
     {db_info}
     <hr>
-    <a href="/">← Back to App</a>
+    <a href="/">← Back to App</a> | <a href="/debug-teams">Debug Teams</a>
     """
+
+@app.route('/debug-teams')
+def debug_teams():
+    """Debug team loading"""
+    debug_info = "<h1>🔍 Team Loading Debug</h1>"
+    
+    try:
+        conn = db_config.get_connection()
+        c = conn.cursor()
+        
+        # Test basic query
+        c.execute("SELECT COUNT(*) FROM competition_team_strength WHERE local_league_strength IS NOT NULL")
+        count = c.fetchone()[0]
+        debug_info += f"<p>Records with local_league_strength: {count}</p>"
+        
+        # Test the actual query
+        c.execute("""
+            SELECT 
+                c.name as league,
+                cts.team_name,
+                cts.local_league_strength,
+                cts.european_strength
+            FROM competition_team_strength cts
+            JOIN competitions c ON cts.competition_id = c.id
+            WHERE c.name = 'Premier League'
+            AND cts.local_league_strength IS NOT NULL
+            LIMIT 5
+        """)
+        
+        debug_info += "<h2>Sample Teams (Premier League):</h2><ul>"
+        results = c.fetchall()
+        for row in results:
+            debug_info += f"<li>{row}</li>"
+        debug_info += "</ul>"
+        
+        conn.close()
+        
+    except Exception as e:
+        debug_info += f"<p style='color: red;'>Error: {str(e)}</p>"
+        import traceback
+        debug_info += f"<pre>{traceback.format_exc()}</pre>"
+    
+    return debug_info + '<br><a href="/">← Back to App</a>'
 
 @app.route('/analyze', methods=['POST'])
 def analyze_match():
