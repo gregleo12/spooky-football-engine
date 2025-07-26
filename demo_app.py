@@ -178,7 +178,14 @@ class FootballStrengthDemo:
         for league in league_order:
             teams_by_league[league] = []
         
-        for league, team, local, european, league_order in c.fetchall():
+        for row in c.fetchall():
+            # PostgreSQL returns tuples, unpack properly
+            league = row[0]
+            team = row[1]
+            local = row[2]
+            european = row[3]
+            # league_order is row[4] but we don't need it here
+            
             # Create unique key for this team-league combination
             team_key = f"{team}_{league}"
             
