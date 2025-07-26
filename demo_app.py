@@ -881,6 +881,17 @@ if __name__ == '__main__':
                 print("🚨 IMPORTANT: Remove RUN_MIGRATION variable from Railway settings now!")
             except Exception as e:
                 print(f"❌ Migration failed: {e}")
+        
+        # Check if Phase 3 migration should be run
+        if os.environ.get('RUN_PHASE3_MIGRATION') == 'true':
+            print("🔧 RUN_PHASE3_MIGRATION detected - Setting up Phase 1-3 database...")
+            try:
+                from railway_phase3_migration import main as run_phase3_migration
+                run_phase3_migration()
+                print("✅ Phase 3 migration completed successfully!")
+                print("🚨 IMPORTANT: Remove RUN_PHASE3_MIGRATION variable from Railway settings now!")
+            except Exception as e:
+                print(f"❌ Phase 3 migration failed: {e}")
     
     print("🏟️ Select teams to see strength analysis!")
     
