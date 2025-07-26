@@ -209,6 +209,106 @@
             padding: 24px;
             text-align: center;
         }
+        
+        /* Filters Section */
+        .filters-section {
+            background: var(--bg-secondary);
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .filter-label {
+            display: block;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .search-input, .league-filter {
+            width: 100%;
+            padding: 10px 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+        
+        .search-input:focus, .league-filter:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(0, 255, 136, 0.1);
+        }
+        
+        .search-input::placeholder {
+            color: var(--text-secondary);
+        }
+        
+        .league-filter {
+            cursor: pointer;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2371717a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 20px;
+            padding-right: 40px;
+            appearance: none;
+        }
+        
+        .clear-filters {
+            padding: 10px 20px;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        
+        .clear-filters:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: rgba(0, 255, 136, 0.05);
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+        
+        .no-results h3 {
+            font-size: 1.25rem;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+        }
+        
+        .filter-stats {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            padding: 0 20px;
+            text-align: right;
+            margin-top: 10px;
+        }
+        
+        .filter-stats span {
+            color: var(--accent);
+            font-weight: 600;
+        }
 
         .ranking-stats {
             display: flex;
@@ -419,9 +519,38 @@
                 </div>
             </div>
 
+            <div class="filters-section">
+                <div class="filter-group">
+                    <label class="filter-label">Search Team</label>
+                    <input type="text" class="search-input" id="search-teams" placeholder="Type team name...">
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Filter by League</label>
+                    <select class="league-filter" id="league-filter">
+                        <option value="">All Leagues</option>
+                        <option value="Premier League">Premier League</option>
+                        <option value="La Liga">La Liga</option>
+                        <option value="Serie A">Serie A</option>
+                        <option value="Bundesliga">Bundesliga</option>
+                        <option value="Ligue 1">Ligue 1</option>
+                        <option value="International" id="international-option" style="display:none;">International</option>
+                    </select>
+                </div>
+                <button class="clear-filters" id="clear-filters">Clear Filters</button>
+            </div>
+
+            <div class="filter-stats" id="filter-stats" style="display: none;">
+                Showing <span id="filtered-count">0</span> of <span id="total-count">0</span> teams
+            </div>
+
             <div class="table-container">
                 <div id="loading" class="loading">Loading teams ranking...</div>
                 <div id="error" class="error" style="display: none;">Failed to load teams ranking</div>
+                
+                <div id="no-results" class="no-results" style="display: none;">
+                    <h3>No teams found</h3>
+                    <p>Try adjusting your search or filter criteria</p>
+                </div>
                 
                 <table id="ranking-table" style="display: none;">
                     <thead>
@@ -447,6 +576,9 @@
     <script>
         let teamsData = null;
         let currentTab = 'clubs';
+        let filteredTeams = [];
+        let currentSearchTerm = '';
+        let currentLeagueFilter = '';
 
         // Tab switching
         document.querySelectorAll('.tab-button').forEach(button => {
@@ -469,9 +601,32 @@
             const title = tab === 'clubs' ? 'Club Teams Ranking' : 'National Teams Ranking';
             document.getElementById('current-tab-title').textContent = title;
             
+            // Show/hide international option in league filter
+            const internationalOption = document.getElementById('international-option');
+            if (tab === 'nations') {
+                internationalOption.style.display = 'block';
+                // Clear league filter if it was set to something not available for nations
+                const leagueFilter = document.getElementById('league-filter');
+                if (leagueFilter.value !== '' && leagueFilter.value !== 'International') {
+                    leagueFilter.value = '';
+                    currentLeagueFilter = '';
+                }
+            } else {
+                internationalOption.style.display = 'none';
+                // Clear international filter if switching to clubs
+                const leagueFilter = document.getElementById('league-filter');
+                if (leagueFilter.value === 'International') {
+                    leagueFilter.value = '';
+                    currentLeagueFilter = '';
+                }
+            }
+            
+            // Clear filters when switching tabs
+            clearFilters();
+            
             // Render data if available
             if (teamsData) {
-                renderRanking(teamsData[tab]);
+                applyFilters();
             }
         }
 
@@ -515,18 +670,74 @@
             return flags[team] || (league === 'International' ? '🌍' : '⚽');
         }
 
+        // Filter functions
+        function applyFilters() {
+            if (!teamsData || !teamsData[currentTab]) return;
+            
+            let teams = [...teamsData[currentTab]];
+            
+            // Apply search filter
+            if (currentSearchTerm) {
+                teams = teams.filter(team => 
+                    team.name.toLowerCase().includes(currentSearchTerm.toLowerCase())
+                );
+            }
+            
+            // Apply league filter
+            if (currentLeagueFilter) {
+                teams = teams.filter(team => team.league === currentLeagueFilter);
+            }
+            
+            filteredTeams = teams;
+            renderRanking(teams);
+            updateFilterStats();
+        }
+
+        function updateFilterStats() {
+            const totalCount = teamsData[currentTab] ? teamsData[currentTab].length : 0;
+            const filteredCount = filteredTeams.length;
+            
+            document.getElementById('total-count').textContent = totalCount;
+            document.getElementById('filtered-count').textContent = filteredCount;
+            document.getElementById('total-teams').textContent = filteredCount;
+            
+            // Show/hide filter stats
+            const filterStats = document.getElementById('filter-stats');
+            const hasFilters = currentSearchTerm || currentLeagueFilter;
+            filterStats.style.display = hasFilters ? 'block' : 'none';
+        }
+
+        function clearFilters() {
+            currentSearchTerm = '';
+            currentLeagueFilter = '';
+            document.getElementById('search-teams').value = '';
+            document.getElementById('league-filter').value = '';
+            applyFilters();
+        }
+
         function renderRanking(teams) {
             const tbody = document.getElementById('ranking-body');
+            const table = document.getElementById('ranking-table');
+            const noResults = document.getElementById('no-results');
+            
             tbody.innerHTML = '';
+            
+            if (teams.length === 0) {
+                table.style.display = 'none';
+                noResults.style.display = 'block';
+                return;
+            }
+            
+            noResults.style.display = 'none';
             
             // Update stats
             const totalTeams = teams.length;
             const avgStrength = teams.reduce((sum, team) => sum + team.overall_strength, 0) / totalTeams;
             
-            document.getElementById('total-teams').textContent = totalTeams;
             document.getElementById('avg-strength').textContent = avgStrength.toFixed(2);
             
-            teams.forEach(team => {
+            // Re-rank filtered teams
+            teams.forEach((team, index) => {
                 const row = document.createElement('tr');
                 
                 // Strength bar width (normalize to 0-100%)
@@ -534,7 +745,7 @@
                 const strengthPercent = (team.overall_strength / maxStrength) * 100;
                 
                 row.innerHTML = `
-                    <td>${team.rank}</td>
+                    <td>${index + 1}</td>
                     <td>
                         <div class="team-info">
                             <div class="team-badge">${getTeamFlag(team.name, team.league)}</div>
@@ -562,7 +773,7 @@
             });
             
             // Show table
-            document.getElementById('ranking-table').style.display = 'table';
+            table.style.display = 'table';
         }
 
         // Load teams ranking data
@@ -574,7 +785,7 @@
                 teamsData = await response.json();
                 
                 document.getElementById('loading').style.display = 'none';
-                renderRanking(teamsData[currentTab]);
+                applyFilters();
                 
             } catch (error) {
                 console.error('Error loading teams ranking:', error);
@@ -583,8 +794,32 @@
             }
         }
 
-        // Initialize
-        loadTeamsRanking();
+        // Event listeners for filters
+        document.addEventListener('DOMContentLoaded', function() {
+            // Search input with debounce
+            let searchTimeout;
+            document.getElementById('search-teams').addEventListener('input', function(e) {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    currentSearchTerm = e.target.value.trim();
+                    applyFilters();
+                }, 300); // 300ms debounce
+            });
+
+            // League filter
+            document.getElementById('league-filter').addEventListener('change', function(e) {
+                currentLeagueFilter = e.target.value;
+                applyFilters();
+            });
+
+            // Clear filters button
+            document.getElementById('clear-filters').addEventListener('click', function() {
+                clearFilters();
+            });
+
+            // Initialize
+            loadTeamsRanking();
+        });
     </script>
 </body>
 </html>
