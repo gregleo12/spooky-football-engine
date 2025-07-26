@@ -674,6 +674,17 @@ if __name__ == '__main__':
         print("🚀 Starting Football Strength Demo (Production)")
         print(f"🌐 Running on port: {port}")
         print(f"🗄️ Database: {db_config.get_db_type()}")
+        
+        # Check if migration should be run
+        if os.environ.get('RUN_MIGRATION') == 'true':
+            print("🔧 RUN_MIGRATION detected - Running confederation migration...")
+            try:
+                from railway_migration_confederation import add_confederations_to_postgresql
+                add_confederations_to_postgresql()
+                print("✅ Migration completed successfully!")
+                print("🚨 IMPORTANT: Remove RUN_MIGRATION variable from Railway settings now!")
+            except Exception as e:
+                print(f"❌ Migration failed: {e}")
     
     print("🏟️ Select teams to see strength analysis!")
     
