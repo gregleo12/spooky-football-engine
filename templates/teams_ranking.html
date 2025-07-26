@@ -412,6 +412,13 @@
         .bundesliga { background: #d20515; color: white; }
         .ligue-1 { background: #003366; color: white; }
         .international { background: #28a745; color: white; }
+        
+        /* Confederation styles */
+        .uefa { background: #003399; color: white; }
+        .conmebol { background: #ffcc00; color: #000; }
+        .concacaf { background: #cc0000; color: white; }
+        .caf { background: #ff6600; color: white; }
+        .afc { background: #1e90ff; color: white; }
 
         .strength-bar {
             width: 60px;
@@ -525,15 +532,19 @@
                     <input type="text" class="search-input" id="search-teams" placeholder="Type team name...">
                 </div>
                 <div class="filter-group">
-                    <label class="filter-label">Filter by League</label>
+                    <label class="filter-label" id="filter-label">Filter by League</label>
                     <select class="league-filter" id="league-filter">
                         <option value="">All Leagues</option>
-                        <option value="Premier League">Premier League</option>
-                        <option value="La Liga">La Liga</option>
-                        <option value="Serie A">Serie A</option>
-                        <option value="Bundesliga">Bundesliga</option>
-                        <option value="Ligue 1">Ligue 1</option>
-                        <option value="International" id="international-option" style="display:none;">International</option>
+                        <option value="Premier League" class="club-option">Premier League</option>
+                        <option value="La Liga" class="club-option">La Liga</option>
+                        <option value="Serie A" class="club-option">Serie A</option>
+                        <option value="Bundesliga" class="club-option">Bundesliga</option>
+                        <option value="Ligue 1" class="club-option">Ligue 1</option>
+                        <option value="UEFA" class="confederation-option" style="display:none;">UEFA (Europe)</option>
+                        <option value="CONMEBOL" class="confederation-option" style="display:none;">CONMEBOL (South America)</option>
+                        <option value="CONCACAF" class="confederation-option" style="display:none;">CONCACAF (North America)</option>
+                        <option value="CAF" class="confederation-option" style="display:none;">CAF (Africa)</option>
+                        <option value="AFC" class="confederation-option" style="display:none;">AFC (Asia)</option>
                     </select>
                 </div>
                 <button class="clear-filters" id="clear-filters">Clear Filters</button>
@@ -601,21 +612,33 @@
             const title = tab === 'clubs' ? 'Club Teams Ranking' : 'National Teams Ranking';
             document.getElementById('current-tab-title').textContent = title;
             
-            // Show/hide international option in league filter
-            const internationalOption = document.getElementById('international-option');
+            // Show/hide appropriate filter options and update label
+            const filterLabel = document.getElementById('filter-label');
+            const clubOptions = document.querySelectorAll('.club-option');
+            const confederationOptions = document.querySelectorAll('.confederation-option');
+            const leagueFilter = document.getElementById('league-filter');
+            
             if (tab === 'nations') {
-                internationalOption.style.display = 'block';
-                // Clear league filter if it was set to something not available for nations
-                const leagueFilter = document.getElementById('league-filter');
-                if (leagueFilter.value !== '' && leagueFilter.value !== 'International') {
+                // Show confederations, hide leagues
+                filterLabel.textContent = 'Filter by Confederation';
+                clubOptions.forEach(option => option.style.display = 'none');
+                confederationOptions.forEach(option => option.style.display = 'block');
+                
+                // Clear league filter if it was set to a club league
+                const clubLeagues = ['Premier League', 'La Liga', 'Serie A', 'Bundesliga', 'Ligue 1'];
+                if (clubLeagues.includes(leagueFilter.value)) {
                     leagueFilter.value = '';
                     currentLeagueFilter = '';
                 }
             } else {
-                internationalOption.style.display = 'none';
-                // Clear international filter if switching to clubs
-                const leagueFilter = document.getElementById('league-filter');
-                if (leagueFilter.value === 'International') {
+                // Show leagues, hide confederations
+                filterLabel.textContent = 'Filter by League';
+                clubOptions.forEach(option => option.style.display = 'block');
+                confederationOptions.forEach(option => option.style.display = 'none');
+                
+                // Clear confederation filter if it was set to a confederation
+                const confederations = ['UEFA', 'CONMEBOL', 'CONCACAF', 'CAF', 'AFC'];
+                if (confederations.includes(leagueFilter.value)) {
                     leagueFilter.value = '';
                     currentLeagueFilter = '';
                 }
@@ -637,7 +660,13 @@
                 'Serie A': 'serie-a',
                 'Bundesliga': 'bundesliga',
                 'Ligue 1': 'ligue-1',
-                'International': 'international'
+                'International': 'international',
+                // Confederations
+                'UEFA': 'uefa',
+                'CONMEBOL': 'conmebol',
+                'CONCACAF': 'concacaf',
+                'CAF': 'caf',
+                'AFC': 'afc'
             };
             return mapping[league] || '';
         }
@@ -683,9 +712,15 @@
                 );
             }
             
-            // Apply league filter
+            // Apply league/confederation filter
             if (currentLeagueFilter) {
-                teams = teams.filter(team => team.league === currentLeagueFilter);
+                if (currentTab === 'nations') {
+                    // Filter by confederation for national teams
+                    teams = teams.filter(team => team.confederation === currentLeagueFilter);
+                } else {
+                    // Filter by league for club teams
+                    teams = teams.filter(team => team.league === currentLeagueFilter);
+                }
             }
             
             filteredTeams = teams;
@@ -751,7 +786,7 @@
                             <div class="team-badge">${getTeamFlag(team.name, team.league)}</div>
                             <div>
                                 <div class="team-name">${team.name}</div>
-                                <span class="league-badge ${getLeagueClass(team.league)}">${team.league}</span>
+                                <span class="league-badge ${getLeagueClass(team.league === 'International' ? team.confederation : team.league)}">${team.league === 'International' ? team.confederation : team.league}</span>
                             </div>
                         </div>
                     </td>

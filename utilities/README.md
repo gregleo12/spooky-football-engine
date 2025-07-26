@@ -98,6 +98,24 @@ DATABASE_URL="your_postgres_url" python3 migrate_to_postgresql.py
 - Always activate virtual environment before running: `source ../venv/bin/activate`
 - Some scripts require environment variables (like DATABASE_URL)
 
+### Environment Requirements
+
+**Scripts that need virtual environment activated:**
+- `simple_test.py` - requires Flask
+- `test_demo.py` - requires Flask and other dependencies
+
+**Scripts that work with system Python:**
+- `postgresql_compatibility_check.py` - uses requests (installed system-wide)
+- `database_health_check.py` - uses standard library + psycopg2
+- `api_stress_test.py` - uses requests
+- Other scripts use mainly standard library
+
+**For production database checks:**
+```bash
+export DATABASE_URL="postgresql://postgres:YOUR_PASSWORD@YOUR_HOST:PORT/railway"
+python3 database_health_check.py
+```
+
 ## 🔧 Adding New Utilities
 
 When adding new utility scripts:

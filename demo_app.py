@@ -599,7 +599,8 @@ def api_teams_ranking():
                 cts.form_score,
                 cts.squad_depth_score,
                 cts.h2h_performance,
-                cts.scoring_patterns
+                cts.scoring_patterns,
+                cts.confederation
             FROM competition_team_strength cts
             JOIN competitions c ON cts.competition_id = c.id
             WHERE c.name IN ('Premier League', 'La Liga', 'Serie A', 'Bundesliga', 'Ligue 1', 'International')
@@ -610,7 +611,7 @@ def api_teams_ranking():
         
         teams = []
         for row in c.fetchall():
-            team_name, league, overall, elo, squad_value, form, squad_depth, h2h, scoring = row
+            team_name, league, overall, elo, squad_value, form, squad_depth, h2h, scoring, confederation = row
             
             # Format squad value - for national teams, show raw score, for clubs show millions
             if league == 'International':
@@ -622,6 +623,7 @@ def api_teams_ranking():
                 'rank': len(teams) + 1,
                 'name': team_name,
                 'league': league,
+                'confederation': confederation if league == 'International' else None,
                 'overall_strength': round(overall, 2) if overall else 0,
                 'elo_score': round(elo, 0) if elo else 0,
                 'squad_value': squad_value_formatted,
