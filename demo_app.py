@@ -310,6 +310,18 @@ def index():
     teams_by_league, all_teams = demo.get_all_teams()
     return render_template('index.html', teams_by_league=teams_by_league, all_teams=all_teams)
 
+@app.route('/health')
+def health_check():
+    """Simple health check endpoint"""
+    return f"""
+    <h1>🟢 Spooky Engine Health Check</h1>
+    <p>Environment: {env_config.environment.value}</p>
+    <p>Database: {env_config.database_type}</p>
+    <p>Phase 3: {PHASE_3_AVAILABLE}</p>
+    <p>Time: {datetime.now().isoformat()}</p>
+    <a href="/">← Back to App</a>
+    """
+
 @app.route('/analyze', methods=['POST'])
 def analyze_match():
     """Analyze selected match"""
