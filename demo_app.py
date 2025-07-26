@@ -317,16 +317,66 @@ def index():
     teams_by_league, all_teams = demo.get_all_teams()
     return render_template('index.html', teams_by_league=teams_by_league, all_teams=all_teams)
 
+@app.route('/test-ui')
+def test_ui():
+    """Test if teams are being passed correctly"""
+    teams_by_league, all_teams = demo.get_all_teams()
+    
+    html = f"""
+    <h1>🧪 UI Test Page</h1>
+    <p>Total Teams: {len(all_teams)}</p>
+    <p>Phase 3 Available: {PHASE_3_AVAILABLE}</p>
+    
+    <h2>Teams by League:</h2>
+    """
+    
+    for league, teams in teams_by_league.items():
+        html += f"<h3>{league} ({len(teams)} teams)</h3>"
+        if teams:
+            html += "<ul>"
+            for team in teams[:3]:  # Show first 3 teams
+                html += f"<li>{team['name']} - Local: {team['local_strength']}, EU: {team['european_strength']}</li>"
+            if len(teams) > 3:
+                html += f"<li>... and {len(teams) - 3} more</li>"
+            html += "</ul>"
+    
+    html += """
+    <hr>
+    <h2>Test Phase 3 Features:</h2>
+    <button onclick="testPhase3()">Test Enhanced Prediction</button>
+    <div id="result"></div>
+    
+    <script>
+    function testPhase3() {
+        fetch('/api/v3/system-status')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('result').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            })
+            .catch(error => {
+                document.getElementById('result').innerHTML = 'Error: ' + error;
+            });
+    }
+    </script>
+    
+    <hr>
+    <a href="/">← Back to Main App</a>
+    """
+    
+    return html
+
 @app.route('/version')
 def version_check():
     """Version check endpoint"""
     return f"""
     <h1>🔢 Spooky Engine Version</h1>
-    <p>Deploy Version: 2025-07-26-v3</p>
+    <p>Deploy Version: 2025-07-26-v3.1</p>
     <p>PostgreSQL Fix: APPLIED</p>
     <p>Debug Endpoints: ENABLED</p>
     <p>Phase 3: {PHASE_3_AVAILABLE}</p>
     <p>Environment: {env_config.environment.value}</p>
+    <p>Teams Loaded: {len(demo.get_all_teams()[1])}</p>
+    <p>Enhanced UI: CHECK SOURCE</p>
     <hr>
     <a href="/">← Home</a> | <a href="/health">Health</a> | <a href="/debug-teams">Debug Teams</a>
     """
