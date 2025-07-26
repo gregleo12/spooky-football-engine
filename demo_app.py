@@ -927,6 +927,10 @@ def api_v3_system_status():
     try:
         status = {
             'phase_3_available': PHASE_3_AVAILABLE,
+            'environment': env_config.environment.value,
+            'database_type': env_config.database_type,
+            'is_local': is_local(),
+            'is_railway': is_railway(),
             'timestamp': datetime.now().isoformat(),
             'features': {
                 'enhanced_data_collection': PHASE_3_AVAILABLE,
@@ -934,21 +938,60 @@ def api_v3_system_status():
                 'live_events': PHASE_3_AVAILABLE,
                 'multiple_models': PHASE_3_AVAILABLE,
                 'real_time_api': PHASE_3_AVAILABLE
+            },
+            'environment_variables': {
+                'DATABASE_URL': bool(os.environ.get('DATABASE_URL')),
+                'RAILWAY_ENVIRONMENT': bool(os.environ.get('RAILWAY_ENVIRONMENT')),
+                'RUN_PHASE3_MIGRATION': os.environ.get('RUN_PHASE3_MIGRATION'),
+                'PORT': os.environ.get('PORT')
             }
         }
         
-        if PHASE_3_AVAILABLE:
-            # Check live data
-            live_matches = live_collector.get_active_matches()
-            status['live_matches'] = len(live_matches)
-            
-            # Check cached teams
-            status['cached_teams'] = len(prediction_service.team_data_cache)
-            
+        # Check database tables
+        try:
+            if is_railway():
+                # Check if Phase 3 tables exist
+                query = "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name IN ('live_matches', 'team_elo_data')"
+                result = db_config.execute_query(query)
+                status['phase3_tables_exist'] = len(result or []) > 0
+                status['database_tables_found'] = len(result or [])
+            else:
+                status['local_database'] = os.path.exists(env_config.database_path)
+        except Exception as e:
+            status['database_error'] = str(e)
+        
         return jsonify(status)
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@app.route('/debug')
+def debug_info():
+    """Debug information page"""
+    debug_data = {
+        'environment': env_config.environment.value,
+        'database_config': env_config.get_database_config(),
+        'phase3_config': env_config.get_phase3_config(),
+        'phase_3_available': PHASE_3_AVAILABLE,
+        'environment_variables': {
+            'DATABASE_URL': os.environ.get('DATABASE_URL', 'Not set')[:50] + '...' if os.environ.get('DATABASE_URL') else 'Not set',
+            'RAILWAY_ENVIRONMENT': os.environ.get('RAILWAY_ENVIRONMENT', 'Not set'),
+            'RUN_PHASE3_MIGRATION': os.environ.get('RUN_PHASE3_MIGRATION', 'Not set'),
+            'PORT': os.environ.get('PORT', 'Not set')
+        }
+    }
+    
+    return f"""
+    <html>
+    <head><title>Spooky Engine Debug</title></head>
+    <body style="font-family: monospace; background: #1a1a1a; color: #00ff88; padding: 20px;">
+        <h1>🔍 Spooky Engine Debug Information</h1>
+        <pre>{json.dumps(debug_data, indent=2)}</pre>
+        <hr>
+        <a href="/" style="color: #00ff88;">← Back to Main App</a>
+    </body>
+    </html>
+    """
 
 if __name__ == '__main__':
     # Log environment information
