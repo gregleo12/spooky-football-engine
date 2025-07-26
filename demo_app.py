@@ -16,6 +16,7 @@ import json
 import sys
 from datetime import datetime
 from database_config import db_config
+from environment_config import env_config, is_local, is_railway, log_startup_info
 
 # Add Phase 1-3 system paths
 sys.path.append(os.path.join(os.path.dirname(__file__), 'agents', 'calculation'))
@@ -39,24 +40,30 @@ except ImportError as e:
 
 app = Flask(__name__)
 
-# Initialize Phase 1-3 services with correct database path
+# Initialize Phase 1-3 services based on environment
 if PHASE_3_AVAILABLE:
     try:
-        # Use database config to get the right database path/connection
-        if db_config.use_postgresql:
-            # For PostgreSQL, we'll create services differently
-            # Don't initialize at module level to avoid SQLite path issues
+        if is_railway():
+            # Railway: No file-based services, database queries only
             prediction_service = None
             live_collector = None
             calculator_engine = None
-            print("✅ Phase 1-3 components ready (PostgreSQL mode)")
-        else:
-            # For SQLite, use the standard path
+            print("✅ Phase 1-3 ready for Railway (database-only mode)")
+            
+        elif is_local():
+            # Local: Full services with file access
             calculator_engine = ModularCalculatorEngine()
             live_collector = LiveMatchCollector()
-            # Create a custom prediction service without the API instance
+            prediction_service = None  # Create on-demand
+            print("✅ Phase 1-3 services initialized (local mode)")
+            
+        else:
+            # Testing or unknown environment
             prediction_service = None
-            print("✅ Phase 1-3 services initialized (SQLite mode)")
+            live_collector = None 
+            calculator_engine = None
+            print("✅ Phase 1-3 minimal initialization")
+            
     except Exception as e:
         print(f"⚠️ Error initializing Phase 1-3 services: {e}")
         PHASE_3_AVAILABLE = False
@@ -944,21 +951,25 @@ def api_v3_system_status():
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
+    # Log environment information
+    log_startup_info()
+    
     # Production configuration
     port = int(os.environ.get('PORT', 5001))
-    debug = not os.environ.get('DATABASE_URL')  # Disable debug in production (when DATABASE_URL exists)
+    debug = env_config.debug_mode
     
-    if debug:
-        # Development mode - check SQLite database
-        if not os.path.exists(demo.db_path):
-            print(f"❌ Database not found at: {demo.db_path}")
+    if is_local():
+        # Local development mode
+        sqlite_path = env_config.database_path
+        if not os.path.exists(sqlite_path):
+            print(f"❌ Database not found at: {sqlite_path}")
             print("Please ensure the database file exists before running the demo.")
             exit(1)
-        print("🚀 Starting Football Strength Demo (Development)")
+        print("🚀 Starting Football Strength Demo (Local Development)")
         print(f"🌐 Open your browser to: http://localhost:{port}")
     else:
-        # Production mode
-        print("🚀 Starting Football Strength Demo (Production)")
+        # Railway production mode
+        print("🚀 Starting Football Strength Demo (Railway Production)")
         print(f"🌐 Running on port: {port}")
         print(f"🗄️ Database: {db_config.get_db_type()}")
         
