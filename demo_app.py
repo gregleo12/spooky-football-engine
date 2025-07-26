@@ -10,7 +10,7 @@ Advanced football prediction platform featuring:
 - Market-specific betting predictions
 - Team analytics and strength comparison
 """
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, make_response
 import os
 import json
 import sys
@@ -315,7 +315,15 @@ demo = FootballStrengthDemo()
 def index():
     """Main page with team selection"""
     teams_by_league, all_teams = demo.get_all_teams()
-    return render_template('index.html', teams_by_league=teams_by_league, all_teams=all_teams)
+    # Add cache busting
+    response = make_response(render_template('index.html', 
+                                            teams_by_league=teams_by_league, 
+                                            all_teams=all_teams,
+                                            version='v3.2-phase3'))
+    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
 
 @app.route('/test-ui')
 def test_ui():
