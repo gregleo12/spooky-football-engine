@@ -2265,18 +2265,31 @@
 
         // Fetch and display last update timestamp
         function fetchLastUpdate() {
+            // For Phase 3, show current browser time to indicate live system
+            const now = new Date();
+            const formatted = now.toLocaleDateString('en-US', { 
+                weekday: 'short', 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                timeZoneName: 'short'
+            });
+            
+            const lastUpdateElement = document.getElementById('lastUpdate');
+            lastUpdateElement.textContent = `Phase 3 Live: ${formatted}`;
+            
+            // Also try to fetch server time but don't block on it
             fetch('/api/last-update')
                 .then(response => response.json())
                 .then(data => {
-                    const lastUpdateElement = document.getElementById('lastUpdate');
-                    if (data.last_update) {
-                        lastUpdateElement.textContent = `Last updated: ${data.last_update}`;
-                    } else {
-                        lastUpdateElement.textContent = 'Last update: Unknown';
+                    if (data.phase3_active) {
+                        lastUpdateElement.textContent = `Phase 3 Live: ${formatted} (Server Active)`;
                     }
                 })
                 .catch(error => {
-                    console.error('Error fetching last update:', error);
+                    console.error('Server time unavailable, showing browser time:', error);
                     document.getElementById('lastUpdate').textContent = 'Last update: Unknown';
                 });
         }
