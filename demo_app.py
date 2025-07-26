@@ -835,6 +835,21 @@ def get_last_update():
         'note': 'Phase 3 live system - always current'
     })
 
+@app.route('/api/current-time')
+def get_current_time():
+    """Get current server time to verify deployment freshness"""
+    from datetime import datetime
+    
+    current_time = datetime.now()
+    formatted_date = current_time.strftime('%B %d, %Y at %H:%M UTC')
+    
+    return jsonify({
+        'current_time': formatted_date,
+        'timestamp': current_time.isoformat(),
+        'server_status': 'live',
+        'deployment_version': '2025-07-26-phase3-v4'
+    })
+
 @app.route('/api/team-form/<team_name>')
 def get_team_form(team_name):
     """Get last 5 games form for a team"""
