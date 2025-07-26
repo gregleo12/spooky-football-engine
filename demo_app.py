@@ -317,6 +317,20 @@ def index():
     teams_by_league, all_teams = demo.get_all_teams()
     return render_template('index.html', teams_by_league=teams_by_league, all_teams=all_teams)
 
+@app.route('/version')
+def version_check():
+    """Version check endpoint"""
+    return f"""
+    <h1>🔢 Spooky Engine Version</h1>
+    <p>Deploy Version: 2025-07-26-v3</p>
+    <p>PostgreSQL Fix: APPLIED</p>
+    <p>Debug Endpoints: ENABLED</p>
+    <p>Phase 3: {PHASE_3_AVAILABLE}</p>
+    <p>Environment: {env_config.environment.value}</p>
+    <hr>
+    <a href="/">← Home</a> | <a href="/health">Health</a> | <a href="/debug-teams">Debug Teams</a>
+    """
+
 @app.route('/health')
 def health_check():
     """Simple health check endpoint"""
