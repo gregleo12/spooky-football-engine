@@ -27,7 +27,9 @@
       "Bash(ls:*)",
       "Bash(pip install:*)",
       "Bash(./venv/bin/python -c \"import flask; print(''Flask is installed'')\")",
-      "Bash(./venv/bin/python:*)"
+      "Bash(./venv/bin/python:*)",
+      "Bash(../../venv/bin/python:*)",
+      "Bash(timeout:*)"
     ],
     "deny": []
   }
