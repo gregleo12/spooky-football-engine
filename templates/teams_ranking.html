@@ -701,15 +701,24 @@
 
         // Filter functions
         function applyFilters() {
-            if (!teamsData || !teamsData[currentTab]) return;
+            console.log('applyFilters called');
+            console.log('teamsData:', teamsData);
+            console.log('currentTab:', currentTab);
+            
+            if (!teamsData || !teamsData[currentTab]) {
+                console.log('No teams data for current tab');
+                return;
+            }
             
             let teams = [...teamsData[currentTab]];
+            console.log('Initial teams count:', teams.length);
             
             // Apply search filter
             if (currentSearchTerm) {
                 teams = teams.filter(team => 
                     team.name.toLowerCase().includes(currentSearchTerm.toLowerCase())
                 );
+                console.log('After search filter:', teams.length);
             }
             
             // Apply league/confederation filter
@@ -721,9 +730,11 @@
                     // Filter by league for club teams
                     teams = teams.filter(team => team.league === currentLeagueFilter);
                 }
+                console.log('After league/confederation filter:', teams.length);
             }
             
             filteredTeams = teams;
+            console.log('Final filtered teams:', teams.length);
             renderRanking(teams);
             updateFilterStats();
         }
@@ -818,6 +829,9 @@
                 if (!response.ok) throw new Error('Failed to fetch');
                 
                 teamsData = await response.json();
+                console.log('Loaded teams data:', teamsData);
+                console.log('Current tab:', currentTab);
+                console.log('Teams for current tab:', teamsData[currentTab]);
                 
                 document.getElementById('loading').style.display = 'none';
                 applyFilters();
