@@ -24,8 +24,8 @@ function toggleDetails() {
     }
 }
 
-// Enhanced show results function
-function showResults(data) {
+// Enhanced show results function - make it globally accessible
+window.showResults = function(data) {
     currentMatchData = data;
     
     // Update match info

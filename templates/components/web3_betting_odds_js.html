@@ -256,8 +256,8 @@ function initializeWeb3Background() {
     }
 }
 
-// Enhanced displayBettingOdds function that uses Web3 design
-function displayBettingOdds(bettingOdds, homeTeam, awayTeam) {
+// Enhanced displayBettingOdds function that uses Web3 design - make it global
+window.displayBettingOdds = function(bettingOdds, homeTeam, awayTeam) {
     // Use the new Web3 display function
     displayWeb3BettingOdds(bettingOdds, homeTeam, awayTeam);
 }
