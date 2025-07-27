@@ -1,7 +1,7 @@
 <!-- Simple Team Selection JavaScript -->
 <script>
-// Team data structure
-const allTeams = {
+// Team data structure - make it globally accessible
+window.allTeams = {
     'Premier League': [
         'Arsenal', 'Aston Villa', 'Bournemouth', 'Brentford', 'Brighton & Hove Albion',
         'Burnley', 'Chelsea', 'Crystal Palace', 'Everton', 'Fulham',
@@ -41,14 +41,15 @@ const allTeams = {
     ]
 };
 
-// Initialize team dropdowns with search
-function initializeTeamSelects() {
-    populateDropdown('home');
-    populateDropdown('away');
+// Initialize team dropdowns with search - make it global
+window.initializeTeamSelects = function() {
+    console.log('Initializing team selects...');
+    window.populateDropdown('home');
+    window.populateDropdown('away');
 }
 
-// Populate dropdown with teams
-function populateDropdown(side) {
+// Populate dropdown with teams - make it global
+window.populateDropdown = function(side) {
     const dropdownContent = document.getElementById(side + 'DropdownContent');
     if (!dropdownContent) return;
     
