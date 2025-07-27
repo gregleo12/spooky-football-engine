@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Betting Odds Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #000; color: #fff; padding: 20px; }
+        .test-container { border: 3px solid #00ff88; padding: 20px; margin: 20px 0; }
+        .odds-item { border: 1px solid #fff; margin: 10px 0; padding: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Betting Odds Display Test</h1>
+    <div class="test-container">
+        <h2>THIS IS A TEST - If you see this, template updates are working!</h2>
+        <button onclick="testOdds()">Test Liverpool vs Chelsea Odds</button>
+        <div id="results"></div>
+    </div>
+
+    <script>
+        function testOdds() {
+            fetch('/analyze', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    home_team: 'Liverpool',
+                    away_team: 'Chelsea'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('API Response:', data);
+                const results = document.getElementById('results');
+                
+                if (data.betting_odds) {
+                    results.innerHTML = `
+                        <h3>✅ BETTING ODDS FOUND!</h3>
+                        <div class="odds-item">
+                            <strong>Home Win:</strong> ${data.betting_odds.match_outcome.home_win.odds} 
+                            (${data.betting_odds.match_outcome.home_win.probability}%)
+                        </div>
+                        <div class="odds-item">
+                            <strong>Draw:</strong> ${data.betting_odds.match_outcome.draw.odds} 
+                            (${data.betting_odds.match_outcome.draw.probability}%)
+                        </div>
+                        <div class="odds-item">
+                            <strong>Away Win:</strong> ${data.betting_odds.match_outcome.away_win.odds} 
+                            (${data.betting_odds.match_outcome.away_win.probability}%)
+                        </div>
+                    `;
+                } else {
+                    results.innerHTML = '<h3>❌ No betting odds in API response</h3>';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('results').innerHTML = '<h3>❌ API Error: ' + error.message + '</h3>';
+            });
+        }
+    </script>
+</body>
+</html>

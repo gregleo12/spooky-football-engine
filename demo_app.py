@@ -1543,6 +1543,11 @@ def api_force_refresh():
             'error': str(e)
         }), 500
 
+@app.route('/test-odds')
+def test_odds():
+    """Test page for betting odds display"""
+    return render_template('test_odds.html')
+
 @app.route('/api/deployment-check')
 def deployment_check():
     """Check if latest deployment is active"""
