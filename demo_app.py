@@ -1444,37 +1444,59 @@ def admin_dashboard():
     from datetime import datetime
     import traceback
     
-    # Get system info
-    env = get_environment().value
-    db_type = db_config.get_db_type().lower()
-    current_time = datetime.now()
-    
-    # Get team data
-    teams_by_league, all_teams = demo.get_all_teams()
-    
-    # Database stats
-    db_stats = {'teams': 0, 'competitions': 0, 'strength_records': 0}
     try:
-        conn = demo.get_database_connection()
-        c = conn.cursor()
+        # Get system info
+        env = get_environment().value
+        db_type = db_config.get_db_type().lower()
+        current_time = datetime.now()
         
-        c.execute("SELECT COUNT(*) FROM teams")
-        db_stats['teams'] = c.fetchone()[0]
-        
-        c.execute("SELECT COUNT(*) FROM competitions")
-        db_stats['competitions'] = c.fetchone()[0]
-        
-        c.execute("SELECT COUNT(*) FROM competition_team_strength")
-        db_stats['strength_records'] = c.fetchone()[0]
-        
-        conn.close()
-    except Exception as e:
-        db_error = str(e)
+        # Get team data
+        teams_by_league, all_teams = demo.get_all_teams()
     
-    # Phase 3 status
-    phase3_status = check_phase3_status()
+        # Database stats
+        db_stats = {'teams': 0, 'competitions': 0, 'strength_records': 0}
+        try:
+            conn = demo.get_database_connection()
+            c = conn.cursor()
+            
+            c.execute("SELECT COUNT(*) FROM teams")
+            db_stats['teams'] = c.fetchone()[0]
+            
+            c.execute("SELECT COUNT(*) FROM competitions")
+            db_stats['competitions'] = c.fetchone()[0]
+            
+            c.execute("SELECT COUNT(*) FROM competition_team_strength")
+            db_stats['strength_records'] = c.fetchone()[0]
+            
+            conn.close()
+        except Exception as e:
+            db_error = str(e)
     
-    return f"""
+        # Phase 3 status
+        phase3_status = {
+        'tables_exist': False,
+        'existing_tables': 0,
+        'required_tables': 8
+    }
+    
+        if is_railway():
+            try:
+            # Check for Phase 3 tables in PostgreSQL
+            query = """
+                SELECT COUNT(*) FROM information_schema.tables 
+                WHERE table_schema = 'public' 
+                AND table_name IN ('live_matches', 'live_events', 'live_predictions',
+                                   'team_elo_data', 'team_form_data', 'team_goals_data',
+                                   'team_squad_data', 'team_context_data')
+            """
+                result = db_config.execute_query(query)
+                if result:
+                    phase3_status['existing_tables'] = result[0][0]
+                    phase3_status['tables_exist'] = result[0][0] > 0
+            except Exception as e:
+                phase3_status['error'] = str(e)
+        
+        return f"""
     <!DOCTYPE html>
     <html>
     <head>
@@ -1647,6 +1669,16 @@ def admin_dashboard():
     </body>
     </html>
     """
+    
+    except Exception as e:
+        # Error fallback
+        return f"""
+        <h1>❌ Admin Dashboard Error</h1>
+        <p>An error occurred while loading the admin dashboard:</p>
+        <pre style="background: #333; color: #ff4444; padding: 20px;">{str(e)}</pre>
+        <pre>{traceback.format_exc()}</pre>
+        <a href="/">← Back to Main App</a>
+        """
 
 if __name__ == '__main__':
     # Log environment information
