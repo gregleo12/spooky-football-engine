@@ -243,18 +243,11 @@ window.analyzeMatch = async function() {
         
         const data = await response.json();
         
-        // Display results
-        if (window.displayResults) {
-            displayResults(data);
+        // Display results using the existing showResults function
+        if (window.showResults) {
+            showResults(data);
         } else {
-            // Fallback display logic
-            document.getElementById('resultContent').style.display = 'block';
-            if (window.updateMatchAnalysis) {
-                updateMatchAnalysis(data);
-            }
-            if (data.betting_odds && window.displayBettingOdds) {
-                displayBettingOdds(data.betting_odds, data.home_team.name, data.away_team.name);
-            }
+            console.error('showResults function not found');
         }
         
         // Show results container with smooth animation
