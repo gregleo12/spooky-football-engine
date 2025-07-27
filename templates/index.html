@@ -1813,8 +1813,8 @@
             updateButton();
         }
         
-        function analyzeMatch() {
-            console.log('🚀 ANALYZE BUTTON CLICKED!');
+        function analyzeMatchOLD_BROKEN() {
+            console.log('🚀 OLD BROKEN FUNCTION - SHOULD NOT BE CALLED!');
             
             let homeTeam = document.getElementById('homeTeam').value;
             let awayTeam = document.getElementById('awayTeam').value;
@@ -2588,13 +2588,13 @@
             if (analyzeBtn) {
                 analyzeBtn.addEventListener('click', function() {
                     console.log('ANALYZE BUTTON CLICKED - CSP SAFE');
-                    simpleAnalyzeMatch();
+                    analyzeMatch();
                 });
             }
         });
         
-        // Simple analyze function that works with CSP
-        function simpleAnalyzeMatch() {
+        // Main analyze function (CSP-safe)
+        function analyzeMatch() {
             const homeTeam = document.getElementById('homeTeam').value;
             const awayTeam = document.getElementById('awayTeam').value;
             
