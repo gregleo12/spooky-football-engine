@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Match Predictor | Football Strength Analyzer</title>
+    <!-- Template Version: Phase 3 Complete Modular Interface - 2025-07-27-17:15 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Include All CSS Components -->
+    {% include 'components/web3_design_system.html' %}
+    {% include 'components/match_results_css.html' %}
+    {% include 'components/enhanced_match_results_css.html' %}
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1 style="background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; filter: drop-shadow(0 0 20px rgba(0, 255, 240, 0.5));">Spooky</h1>
+            <p class="header-subtitle" style="color: var(--text-secondary);">Professional Betting Odds Platform</p>
+        </header>
+        
+        <!-- Simple Team Selection Component -->
+        {% include 'components/simple_team_selection.html' %}
+        
+        <!-- Results Section (Initially Hidden) -->
+        <div id="resultsContainer" style="display: none;">
+            <!-- Enhanced Match Results Component -->
+            {% include 'components/enhanced_match_results.html' %}
+            
+            <!-- Web3 Betting Odds Component - Below Analysis -->
+            {% include 'components/web3_betting_odds.html' %}
+        </div>
+    </div>
+    
+    <!-- Include All JavaScript Components -->
+    {% include 'components/enhanced_match_results_js.html' %}
+    {% include 'components/web3_betting_odds_js.html' %}
+    {% include 'components/main_javascript_clean.html' %}
+    {% include 'components/simple_team_selection_js.html' %}
+    
+    <!-- Debug Fix - Ensures all functions work -->
+    {% include 'components/debug_fix.html' %}
+    
+    <!-- CSP Compliant Event Handlers -->
+    {% include 'components/csp_compliant_events.html' %}
+</body>
+</html>

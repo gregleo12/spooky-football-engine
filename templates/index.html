@@ -2,49 +2,282 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Match Predictor | Football Strength Analyzer</title>
-    <!-- Template Version: Phase 3 Complete Modular Interface - 2025-07-27-17:15 -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spooky Football Engine</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Include All CSS Components -->
-    {% include 'components/web3_design_system.html' %}
-    {% include 'components/match_results_css.html' %}
-    {% include 'components/enhanced_match_results_css.html' %}
+    <style>
+        :root {
+            --bg-primary: #0F0F23;
+            --bg-secondary: #1A1A2E;
+            --bg-hover: #16213E;
+            --text-primary: #FFFFFF;
+            --text-secondary: #D1D5DB;
+            --accent: #00FFF0;
+            --border: rgba(0, 255, 240, 0.2);
+            --gradient-primary: linear-gradient(135deg, #00FFF0 0%, #00D4FF 50%, #0099FF 100%);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .team-selection-card {
+            background: linear-gradient(135deg, #1A1A2E 0%, #16213E 100%);
+            border-radius: 20px;
+            padding: 32px;
+            border: 1px solid var(--border);
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+            max-width: 800px;
+            margin: 0 auto 40px;
+        }
+
+        .team-grid {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 24px;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        .team-selector label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .team-select {
+            width: 100%;
+            background: rgba(26, 26, 46, 0.6);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px 16px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .vs-section {
+            text-align: center;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .analyze-btn {
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+            background: var(--gradient-primary);
+            border: none;
+            border-radius: 16px;
+            padding: 18px 32px;
+            color: var(--bg-primary);
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: block;
+        }
+
+        .analyze-btn:disabled {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-secondary);
+            cursor: not-allowed;
+        }
+
+        .results-section {
+            background: var(--bg-secondary);
+            border-radius: 20px;
+            padding: 32px;
+            border: 1px solid var(--border);
+            display: none;
+            margin-top: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .team-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="container">
-        <!-- Header -->
         <header class="header">
-            <h1 style="background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; filter: drop-shadow(0 0 20px rgba(0, 255, 240, 0.5));">Spooky</h1>
-            <p class="header-subtitle" style="color: var(--text-secondary);">Professional Betting Odds Platform</p>
+            <h1>Spooky</h1>
+            <p>Professional Betting Odds Platform</p>
         </header>
         
-        <!-- Simple Team Selection Component -->
-        {% include 'components/simple_team_selection.html' %}
-        
-        <!-- Results Section (Initially Hidden) -->
-        <div id="resultsContainer" style="display: none;">
-            <!-- Enhanced Match Results Component -->
-            {% include 'components/enhanced_match_results.html' %}
+        <div class="team-selection-card">
+            <h2>Select Match</h2>
             
-            <!-- Web3 Betting Odds Component - Below Analysis -->
-            {% include 'components/web3_betting_odds.html' %}
+            <div class="team-grid">
+                <div class="team-selector">
+                    <label for="homeTeam">Home Team</label>
+                    <select id="homeTeam">
+                        <option value="">Select home team...</option>
+                    </select>
+                </div>
+                
+                <div class="vs-section">VS</div>
+                
+                <div class="team-selector">
+                    <label for="awayTeam">Away Team</label>
+                    <select id="awayTeam">
+                        <option value="">Select away team...</option>
+                    </select>
+                </div>
+            </div>
+            
+            <button class="analyze-btn" id="analyzeBtn" disabled>
+                ANALYZE MATCH
+            </button>
+        </div>
+        
+        <div class="results-section" id="resultsSection">
+            <h3 id="matchTitle">Match Results</h3>
+            <div id="matchResults"></div>
+            <div id="bettingOdds"></div>
         </div>
     </div>
-    
-    <!-- Include All JavaScript Components -->
-    {% include 'components/enhanced_match_results_js.html' %}
-    {% include 'components/web3_betting_odds_js.html' %}
-    {% include 'components/main_javascript_clean.html' %}
-    {% include 'components/simple_team_selection_js.html' %}
-    
-    <!-- Debug Fix - Ensures all functions work -->
-    {% include 'components/debug_fix.html' %}
-    
-    <!-- CSP Compliant Event Handlers -->
-    {% include 'components/csp_compliant_events.html' %}
+
+    <script>
+        // Team data
+        const teams = {
+            'Premier League': ['Arsenal', 'Chelsea', 'Liverpool', 'Manchester City', 'Manchester United', 'Tottenham Hotspur'],
+            'La Liga': ['Barcelona', 'Real Madrid', 'Atletico Madrid', 'Athletic Club', 'Real Betis'],
+            'Serie A': ['Inter', 'AC Milan', 'Juventus', 'Napoli', 'AS Roma'],
+            'Bundesliga': ['Bayern München', 'Borussia Dortmund', 'RB Leipzig', 'Bayer Leverkusen'],
+            'Ligue 1': ['Paris Saint Germain', 'Monaco', 'Marseille', 'Lille']
+        };
+
+        // Populate dropdowns
+        function populateDropdowns() {
+            const homeSelect = document.getElementById('homeTeam');
+            const awaySelect = document.getElementById('awayTeam');
+            
+            Object.keys(teams).forEach(league => {
+                const homeGroup = document.createElement('optgroup');
+                homeGroup.label = league;
+                const awayGroup = document.createElement('optgroup');
+                awayGroup.label = league;
+                
+                teams[league].forEach(team => {
+                    const homeOption = new Option(team, team);
+                    const awayOption = new Option(team, team);
+                    homeGroup.appendChild(homeOption);
+                    awayGroup.appendChild(awayOption);
+                });
+                
+                homeSelect.appendChild(homeGroup);
+                awaySelect.appendChild(awayGroup);
+            });
+        }
+
+        // Update button state
+        function updateButton() {
+            const homeTeam = document.getElementById('homeTeam').value;
+            const awayTeam = document.getElementById('awayTeam').value;
+            const btn = document.getElementById('analyzeBtn');
+            
+            btn.disabled = !(homeTeam && awayTeam && homeTeam !== awayTeam);
+        }
+
+        // Analyze match
+        async function analyzeMatch() {
+            const homeTeam = document.getElementById('homeTeam').value;
+            const awayTeam = document.getElementById('awayTeam').value;
+            
+            if (!homeTeam || !awayTeam) return;
+            
+            const btn = document.getElementById('analyzeBtn');
+            btn.textContent = 'Analyzing...';
+            btn.disabled = true;
+            
+            try {
+                const response = await fetch('/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ home_team: homeTeam, away_team: awayTeam })
+                });
+                
+                const data = await response.json();
+                showResults(data);
+                
+            } catch (error) {
+                alert('Error: ' + error.message);
+            } finally {
+                btn.textContent = 'ANALYZE MATCH';
+                btn.disabled = false;
+            }
+        }
+
+        // Show results
+        function showResults(data) {
+            const resultsSection = document.getElementById('resultsSection');
+            const matchTitle = document.getElementById('matchTitle');
+            const matchResults = document.getElementById('matchResults');
+            const bettingOdds = document.getElementById('bettingOdds');
+            
+            matchTitle.textContent = `${data.home_team.name} vs ${data.away_team.name}`;
+            
+            matchResults.innerHTML = `
+                <p><strong>Home Strength:</strong> ${Math.round(data.home_strength)}</p>
+                <p><strong>Away Strength:</strong> ${Math.round(data.away_strength)}</p>
+                <p><strong>Prediction:</strong> ${data.favorite} to win</p>
+            `;
+            
+            if (data.betting_odds) {
+                const odds = data.betting_odds.match_outcome;
+                bettingOdds.innerHTML = `
+                    <h4>Betting Odds</h4>
+                    <p>Home Win: ${odds.home_win.odds} (${odds.home_win.probability}%)</p>
+                    <p>Draw: ${odds.draw.odds} (${odds.draw.probability}%)</p>
+                    <p>Away Win: ${odds.away_win.odds} (${odds.away_win.probability}%)</p>
+                `;
+            }
+            
+            resultsSection.style.display = 'block';
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            populateDropdowns();
+            
+            document.getElementById('homeTeam').addEventListener('change', updateButton);
+            document.getElementById('awayTeam').addEventListener('change', updateButton);
+            document.getElementById('analyzeBtn').addEventListener('click', analyzeMatch);
+        });
+    </script>
 </body>
 </html>
