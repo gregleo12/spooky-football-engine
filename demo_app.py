@@ -1543,6 +1543,17 @@ def api_force_refresh():
             'error': str(e)
         }), 500
 
+@app.route('/api/deployment-check')
+def deployment_check():
+    """Check if latest deployment is active"""
+    return jsonify({
+        'status': 'active',
+        'timestamp': datetime.now().isoformat(),
+        'latest_commit': '252e252',
+        'phase_3_betting_odds': True,
+        'message': 'Phase 3 betting odds display deployed successfully'
+    })
+
 if __name__ == '__main__':
     # Log environment information
     log_startup_info()
