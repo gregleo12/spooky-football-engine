@@ -10,18 +10,17 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <!-- Include All CSS Components -->
-    {% include 'components/core_styles.html' %}
+    {% include 'components/web3_design_system.html' %}
     {% include 'components/enhanced_team_selection_css.html' %}
     {% include 'components/match_results_css.html' %}
     {% include 'components/enhanced_match_results_css.html' %}
-    {% include 'components/betting_odds_css.html' %}
 </head>
 <body>
     <div class="container">
         <!-- Header -->
         <header class="header">
-            <h1>Spooky</h1>
-            <p class="header-subtitle">Advanced football analytics & predictions</p>
+            <h1 style="background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; filter: drop-shadow(0 0 20px rgba(0, 255, 240, 0.5));">Spooky</h1>
+            <p class="header-subtitle" style="color: var(--text-secondary);">Professional Betting Odds Platform</p>
         </header>
         
         <!-- Enhanced Team Selection Component -->
@@ -29,10 +28,13 @@
         
         <!-- Enhanced Match Results Component -->
         {% include 'components/enhanced_match_results.html' %}
+        
+        <!-- Web3 Betting Odds Component -->
+        {% include 'components/web3_betting_odds.html' %}
     </div>
     
     <!-- Include All JavaScript Components -->
-    {% include 'components/betting_odds_js.html' %}
+    {% include 'components/web3_betting_odds_js.html' %}
     {% include 'components/enhanced_team_selection_js.html' %}
     {% include 'components/enhanced_match_results_js.html' %}
     {% include 'components/main_javascript.html' %}

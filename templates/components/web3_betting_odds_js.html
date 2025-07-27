@@ -1,0 +1,283 @@
+<!-- Web3 Betting Odds JavaScript -->
+<script>
+// Web3 Betting Odds Display Functions
+function displayWeb3BettingOdds(bettingOdds, homeTeam, awayTeam) {
+    console.log('Displaying Web3 betting odds:', bettingOdds);
+    
+    // Update team names and logos
+    updateTeamDisplays(homeTeam, awayTeam);
+    
+    // Display Match Outcome Odds
+    if (bettingOdds.match_outcome) {
+        updateMatchOutcomeOdds(bettingOdds.match_outcome);
+    }
+    
+    // Display Goals Market
+    if (bettingOdds.goals_market) {
+        updateGoalsMarketOdds(bettingOdds.goals_market);
+    }
+    
+    // Display BTTS Market
+    if (bettingOdds.btts_market) {
+        updateBTTSMarketOdds(bettingOdds.btts_market);
+    }
+    
+    // Update Market Summary
+    updateMarketSummary(bettingOdds, homeTeam, awayTeam);
+    
+    // Show the betting odds container with animation
+    showBettingOddsWithAnimation();
+    
+    // Add interactive effects
+    addOddsInteractivity();
+    
+    console.log('Web3 betting odds display completed');
+}
+
+// Update team names and logos
+function updateTeamDisplays(homeTeam, awayTeam) {
+    document.getElementById('homeOddsTeam').textContent = homeTeam;
+    document.getElementById('awayOddsTeam').textContent = awayTeam;
+    
+    // Update team logos with league flags
+    const homeFlag = getTeamFlag(getTeamLeague(homeTeam));
+    const awayFlag = getTeamFlag(getTeamLeague(awayTeam));
+    
+    document.getElementById('homeOddsLogo').textContent = homeFlag;
+    document.getElementById('awayOddsLogo').textContent = awayFlag;
+}
+
+// Get team league (simplified - would use actual team data)
+function getTeamLeague(teamName) {
+    const leagueMapping = {
+        'Liverpool': 'Premier League',
+        'Manchester City': 'Premier League',
+        'Chelsea': 'Premier League',
+        'Arsenal': 'Premier League',
+        'Real Madrid': 'La Liga',
+        'Barcelona': 'La Liga',
+        'Inter': 'Serie A',
+        'AC Milan': 'Serie A',
+        'Bayern München': 'Bundesliga',
+        'Paris Saint Germain': 'Ligue 1'
+    };
+    return leagueMapping[teamName] || 'Premier League';
+}
+
+// Update Match Outcome Odds
+function updateMatchOutcomeOdds(matchOdds) {
+    // Home Win
+    document.getElementById('homeOdds').textContent = matchOdds.home_win.odds;
+    document.getElementById('homeOddsProb').textContent = matchOdds.home_win.probability + '%';
+    
+    // Draw
+    document.getElementById('drawOdds').textContent = matchOdds.draw.odds;
+    document.getElementById('drawOddsProb').textContent = matchOdds.draw.probability + '%';
+    
+    // Away Win
+    document.getElementById('awayOdds').textContent = matchOdds.away_win.odds;
+    document.getElementById('awayOddsProb').textContent = matchOdds.away_win.probability + '%';
+    
+    // Highlight favorite
+    highlightFavorite(matchOdds);
+}
+
+// Update Goals Market Odds
+function updateGoalsMarketOdds(goalsOdds) {
+    // Over 2.5
+    document.getElementById('over25Odds').textContent = goalsOdds.over_2_5.odds;
+    document.getElementById('over25Prob').textContent = goalsOdds.over_2_5.probability + '%';
+    
+    // Under 2.5
+    document.getElementById('under25Odds').textContent = goalsOdds.under_2_5.odds;
+    document.getElementById('under25Prob').textContent = goalsOdds.under_2_5.probability + '%';
+}
+
+// Update BTTS Market Odds
+function updateBTTSMarketOdds(bttsOdds) {
+    // BTTS Yes
+    document.getElementById('bttsYesOdds').textContent = bttsOdds.yes.odds;
+    document.getElementById('bttsYesProb').textContent = bttsOdds.yes.probability + '%';
+    
+    // BTTS No
+    document.getElementById('bttsNoOdds').textContent = bttsOdds.no.odds;
+    document.getElementById('bttsNoProb').textContent = bttsOdds.no.probability + '%';
+}
+
+// Highlight favorite with special effects
+function highlightFavorite(matchOdds) {
+    // Remove existing favorite classes
+    document.querySelectorAll('.odds-card').forEach(card => {
+        card.classList.remove('favorite');
+    });
+    
+    // Find the favorite (lowest odds = highest probability)
+    const homeOdds = parseFloat(matchOdds.home_win.odds);
+    const drawOdds = parseFloat(matchOdds.draw.odds);
+    const awayOdds = parseFloat(matchOdds.away_win.odds);
+    
+    const minOdds = Math.min(homeOdds, drawOdds, awayOdds);
+    
+    if (minOdds === homeOdds) {
+        document.querySelector('.odds-card[data-market="home"]').classList.add('favorite');
+    } else if (minOdds === drawOdds) {
+        document.querySelector('.odds-card[data-market="draw"]').classList.add('favorite');
+    } else {
+        document.querySelector('.odds-card[data-market="away"]').classList.add('favorite');
+    }
+}
+
+// Update Market Summary
+function updateMarketSummary(bettingOdds, homeTeam, awayTeam) {
+    // Calculate expected goals
+    const expectedGoals = calculateExpectedGoalsFromOdds(bettingOdds);
+    document.getElementById('expectedGoalsSummary').textContent = expectedGoals.toFixed(1);
+    
+    // Calculate most likely score
+    const mostLikelyScore = calculateMostLikelyScore(bettingOdds);
+    document.getElementById('mostLikelyScore').textContent = mostLikelyScore;
+    
+    // Determine betting trend
+    const bettingTrend = determineBettingTrend(bettingOdds, homeTeam, awayTeam);
+    document.getElementById('bettingTrend').textContent = bettingTrend;
+}
+
+// Calculate expected goals from betting odds
+function calculateExpectedGoalsFromOdds(bettingOdds) {
+    if (bettingOdds.goals_market) {
+        const overProb = bettingOdds.goals_market.over_2_5.probability / 100;
+        // Simple estimation: if over 2.5 is 70%, expected goals ≈ 2.8
+        return 2.5 + (overProb - 0.5) * 2;
+    }
+    return 2.5; // Default
+}
+
+// Calculate most likely score
+function calculateMostLikelyScore(bettingOdds) {
+    if (bettingOdds.match_outcome) {
+        const homeProb = bettingOdds.match_outcome.home_win.probability;
+        const drawProb = bettingOdds.match_outcome.draw.probability;
+        const awayProb = bettingOdds.match_outcome.away_win.probability;
+        
+        if (homeProb > drawProb && homeProb > awayProb) {
+            return homeProb > 60 ? '2-0' : '1-0';
+        } else if (awayProb > homeProb && awayProb > drawProb) {
+            return awayProb > 60 ? '0-2' : '0-1';
+        } else {
+            return '1-1';
+        }
+    }
+    return '1-1';
+}
+
+// Determine betting trend
+function determineBettingTrend(bettingOdds, homeTeam, awayTeam) {
+    if (bettingOdds.match_outcome) {
+        const homeProb = bettingOdds.match_outcome.home_win.probability;
+        const awayProb = bettingOdds.match_outcome.away_win.probability;
+        
+        const diff = Math.abs(homeProb - awayProb);
+        
+        if (diff < 10) {
+            return 'Even Match';
+        } else if (homeProb > awayProb) {
+            return 'Home Favored';
+        } else {
+            return 'Away Favored';
+        }
+    }
+    return 'Balanced';
+}
+
+// Show betting odds with animation
+function showBettingOddsWithAnimation() {
+    const container = document.getElementById('bettingOddsContainer');
+    
+    if (container) {
+        // Add loading animation first
+        container.style.display = 'block';
+        container.style.opacity = '0';
+        container.style.transform = 'translateY(20px)';
+        
+        // Animate in
+        setTimeout(() => {
+            container.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+            container.style.opacity = '1';
+            container.style.transform = 'translateY(0)';
+        }, 100);
+        
+        // Animate individual cards
+        const cards = container.querySelectorAll('.odds-card');
+        cards.forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(30px)';
+            
+            setTimeout(() => {
+                card.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, 200 + (index * 100));
+        });
+    }
+}
+
+// Add interactive effects to odds cards
+function addOddsInteractivity() {
+    const oddsCards = document.querySelectorAll('.odds-card[data-market]');
+    
+    oddsCards.forEach(card => {
+        card.addEventListener('click', function() {
+            // Add click effect
+            this.style.transform = 'scale(0.98)';
+            setTimeout(() => {
+                this.style.transform = '';
+            }, 150);
+            
+            // Add temporary glow effect
+            this.classList.add('crypto-pulse');
+            setTimeout(() => {
+                this.classList.remove('crypto-pulse');
+            }, 2000);
+            
+            // Log selection (could be used for betting interface)
+            const market = this.getAttribute('data-market');
+            const odds = this.querySelector('.odds-display').textContent;
+            console.log(`Selected: ${market} at odds ${odds}`);
+        });
+    });
+}
+
+// Add Web3 background on page load
+function initializeWeb3Background() {
+    if (!document.querySelector('.web3-background')) {
+        const background = document.createElement('div');
+        background.className = 'web3-background';
+        document.body.appendChild(background);
+    }
+}
+
+// Enhanced displayBettingOdds function that uses Web3 design
+function displayBettingOdds(bettingOdds, homeTeam, awayTeam) {
+    // Use the new Web3 display function
+    displayWeb3BettingOdds(bettingOdds, homeTeam, awayTeam);
+}
+
+// Initialize Web3 enhancements
+document.addEventListener('DOMContentLoaded', function() {
+    initializeWeb3Background();
+    console.log('Web3 betting odds system initialized');
+});
+
+// Update live odds indicator
+function updateLiveIndicator() {
+    const liveText = document.querySelector('.live-text');
+    if (liveText) {
+        const now = new Date();
+        const timeString = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        liveText.textContent = `Live Odds • Updated ${timeString}`;
+    }
+}
+
+// Update live indicator every minute
+setInterval(updateLiveIndicator, 60000);
+</script>

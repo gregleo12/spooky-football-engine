@@ -1,0 +1,275 @@
+<!-- Web3/Crypto Multi-Market Betting Odds Display -->
+<div class="betting-odds-container web3-betting" id="bettingOddsContainer" style="display: none;">
+    
+    <!-- Match Outcome Section (Primary Market) -->
+    <div class="odds-section match-outcome">
+        <h3 class="market-header">
+            <span class="market-icon">⚽</span>
+            Match Result
+        </h3>
+        <div class="odds-grid">
+            <div class="odds-card web3-card home-team" data-market="home">
+                <div class="team-info">
+                    <div class="team-logo" id="homeOddsLogo">🏠</div>
+                    <span class="team-name" id="homeOddsTeam">Home</span>
+                </div>
+                <div class="odds-display" id="homeOdds">-</div>
+                <div class="probability" id="homeOddsProb">-%</div>
+            </div>
+            
+            <div class="odds-card web3-card draw" data-market="draw">
+                <div class="team-info">
+                    <div class="team-logo draw-icon">🤝</div>
+                    <span class="team-name">Draw</span>
+                </div>
+                <div class="odds-display" id="drawOdds">-</div>
+                <div class="probability" id="drawOddsProb">-%</div>
+            </div>
+            
+            <div class="odds-card web3-card away-team" data-market="away">
+                <div class="team-info">
+                    <div class="team-logo" id="awayOddsLogo">✈️</div>
+                    <span class="team-name" id="awayOddsTeam">Away</span>
+                </div>
+                <div class="odds-display" id="awayOdds">-</div>
+                <div class="probability" id="awayOddsProb">-%</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Goals Market Section -->
+    <div class="odds-section goals-market">
+        <h3 class="market-header">
+            <span class="market-icon">🥅</span>
+            Total Goals
+        </h3>
+        <div class="odds-grid-2">
+            <div class="odds-card web3-card over" data-market="over">
+                <span class="market-label">Over 2.5</span>
+                <div class="odds-display" id="over25Odds">-</div>
+                <div class="probability" id="over25Prob">-%</div>
+            </div>
+            
+            <div class="odds-card web3-card under" data-market="under">
+                <span class="market-label">Under 2.5</span>
+                <div class="odds-display" id="under25Odds">-</div>
+                <div class="probability" id="under25Prob">-%</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Both Teams to Score Section -->
+    <div class="odds-section btts-market">
+        <h3 class="market-header">
+            <span class="market-icon">🎯</span>
+            Both Teams to Score
+        </h3>
+        <div class="odds-grid-2">
+            <div class="odds-card web3-card btts-yes" data-market="btts-yes">
+                <span class="market-label">Yes</span>
+                <div class="odds-display" id="bttsYesOdds">-</div>
+                <div class="probability" id="bttsYesProb">-%</div>
+            </div>
+            
+            <div class="odds-card web3-card btts-no" data-market="btts-no">
+                <span class="market-label">No</span>
+                <div class="odds-display" id="bttsNoOdds">-</div>
+                <div class="probability" id="bttsNoProb">-%</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Market Summary Section -->
+    <div class="odds-section market-summary">
+        <h3 class="market-header">
+            <span class="market-icon">📊</span>
+            Market Summary
+        </h3>
+        <div class="summary-grid">
+            <div class="summary-card web3-card">
+                <div class="summary-label">Expected Goals</div>
+                <div class="summary-value" id="expectedGoalsSummary">2.5</div>
+            </div>
+            <div class="summary-card web3-card">
+                <div class="summary-label">Most Likely Score</div>
+                <div class="summary-value" id="mostLikelyScore">2-1</div>
+            </div>
+            <div class="summary-card web3-card">
+                <div class="summary-label">Betting Trend</div>
+                <div class="summary-value" id="bettingTrend">Home Favored</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Live Odds Indicator -->
+    <div class="live-odds-indicator">
+        <div class="live-dot crypto-pulse"></div>
+        <span class="live-text">Live Odds • Updated Now</span>
+    </div>
+</div>
+
+<!-- Additional Web3 Styling for Betting Odds -->
+<style>
+.web3-betting {
+    margin-top: 40px;
+    padding: 0;
+    background: transparent;
+    border: none;
+}
+
+.market-icon {
+    font-size: 1.5rem;
+    filter: drop-shadow(0 0 8px rgba(0, 255, 240, 0.6));
+}
+
+/* Summary Section Styling */
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+}
+
+.summary-card {
+    text-align: center;
+    padding: 20px;
+}
+
+.summary-label {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.summary-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Live Odds Indicator */
+.live-odds-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 24px;
+    padding: 12px 24px;
+    background: rgba(0, 255, 240, 0.1);
+    border: 1px solid rgba(0, 255, 240, 0.3);
+    border-radius: 25px;
+    backdrop-filter: blur(10px);
+}
+
+.live-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--neon-cyan);
+}
+
+.live-text {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--neon-cyan);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Enhanced Card Interactions */
+.odds-card[data-market]:hover {
+    cursor: pointer;
+}
+
+.odds-card[data-market="home"]:hover {
+    background: linear-gradient(135deg, #1A1A2E 0%, #16213E 50%, #1A1A2E 100%);
+    border-color: var(--neon-cyan);
+}
+
+.odds-card[data-market="draw"]:hover {
+    background: linear-gradient(135deg, #1A1A2E 0%, #16213E 50%, #1A1A2E 100%);
+    border-color: var(--electric-purple);
+}
+
+.odds-card[data-market="away"]:hover {
+    background: linear-gradient(135deg, #1A1A2E 0%, #16213E 50%, #1A1A2E 100%);
+    border-color: var(--tech-blue);
+}
+
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+    .summary-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .odds-section {
+        padding: 24px 20px;
+        margin-bottom: 24px;
+    }
+    
+    .market-header {
+        font-size: 1.25rem;
+        margin-bottom: 20px;
+    }
+    
+    .odds-display {
+        font-size: 2rem;
+    }
+    
+    .live-odds-indicator {
+        margin-top: 20px;
+        padding: 10px 20px;
+    }
+}
+
+/* Loading States */
+.odds-loading {
+    background: var(--gradient-card);
+    position: relative;
+    overflow: hidden;
+}
+
+.odds-loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(0, 255, 240, 0.2),
+        transparent
+    );
+    animation: loading-shimmer 1.5s infinite;
+}
+
+@keyframes loading-shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+/* Favorite Indicator */
+.odds-card.favorite {
+    background: linear-gradient(135deg, #1A1A2E 0%, #16213E 50%, #1A1A2E 100%);
+    border: 1px solid var(--neon-cyan);
+    box-shadow: 
+        0 0 20px rgba(0, 255, 240, 0.3),
+        var(--shadow-deep);
+}
+
+.odds-card.favorite::before {
+    opacity: 1;
+}
+
+.odds-card.favorite .odds-display {
+    filter: drop-shadow(0 0 15px rgba(0, 255, 240, 0.8));
+}
+</style>
