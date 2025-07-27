@@ -1,0 +1,233 @@
+<!-- Core UI Styles Component -->
+<style>
+/* Core Variables */
+:root {
+    --bg-primary: #0a0a0f;
+    --bg-secondary: #1a1a2e;
+    --bg-hover: #16213e;
+    --text-primary: #ffffff;
+    --text-secondary: #a0a3bd;
+    --accent: #00ff88;
+    --border: #2a2a3e;
+    --gradient-bg: linear-gradient(180deg, #050510 0%, #0a0a1a 100%);
+}
+
+/* Base Styles */
+body {
+    font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Header Styles */
+.header {
+    text-align: center;
+    margin-bottom: 40px;
+    position: relative;
+}
+
+.header h1 {
+    font-size: 3rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--accent), #00cc70);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 8px;
+}
+
+.header-subtitle {
+    font-size: 16px;
+    color: var(--text-secondary);
+}
+
+/* Card Styles */
+.match-setup-card {
+    background: var(--bg-secondary);
+    border-radius: 20px;
+    padding: 32px;
+    border: 1px solid var(--border);
+    margin-bottom: 30px;
+}
+
+.card-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.card-title-icon {
+    width: 32px;
+    height: 32px;
+    background: rgba(0, 255, 136, 0.1);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+}
+
+/* Tab Navigation */
+.tab-navigation {
+    display: flex;
+    background: var(--bg-hover);
+    border-radius: 12px;
+    padding: 4px;
+    margin-bottom: 24px;
+}
+
+.tab-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.tab-btn.active {
+    background: var(--accent);
+    color: var(--bg-primary);
+}
+
+.tab-icon {
+    font-size: 16px;
+}
+
+/* Team Selection Grid */
+.team-selection-grid {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 20px;
+    align-items: end;
+    margin-bottom: 24px;
+}
+
+.team-selector label {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+}
+
+.team-selector select {
+    width: 100%;
+    background: var(--bg-hover);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    color: var(--text-primary);
+    font-size: 14px;
+}
+
+.vs-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.swap-button {
+    background: var(--bg-hover);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    width: 40px;
+    height: 40px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.swap-button:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.vs-text {
+    font-weight: 700;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+/* Analyze Button */
+.analyze-btn {
+    width: 100%;
+    background: var(--accent);
+    border: none;
+    border-radius: 12px;
+    padding: 16px;
+    color: var(--bg-primary);
+    font-weight: 700;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.analyze-btn:disabled {
+    background: var(--bg-hover);
+    color: var(--text-secondary);
+    cursor: not-allowed;
+}
+
+.analyze-btn:not(:disabled):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 255, 136, 0.3);
+}
+
+.btn-icon {
+    font-size: 16px;
+}
+
+/* Results Section */
+.results-section {
+    background: var(--bg-secondary);
+    border-radius: 20px;
+    padding: 32px;
+    border: 1px solid var(--border);
+    display: none;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .team-selection-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .vs-section {
+        order: -1;
+        flex-direction: row;
+    }
+    
+    .container {
+        padding: 16px;
+    }
+    
+    .match-setup-card {
+        padding: 20px;
+    }
+}
+</style>

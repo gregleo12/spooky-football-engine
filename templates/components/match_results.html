@@ -1,0 +1,44 @@
+<!-- Match Results Display Component -->
+<div class="results-section" id="resultContent" style="display: none;">
+    <div class="results-header">
+        <div class="match-badge" id="matchType">Same League</div>
+        <h3 class="match-title" id="matchTitle">Team vs Team</h3>
+        <p class="match-subtitle">Strength Analysis</p>
+    </div>
+    
+    <div class="score-display">
+        <div class="team-result">
+            <div class="team-badge" id="homeResultBadge">🏠</div>
+            <div class="team-info">
+                <h4 id="homeName">Home Team</h4>
+                <p id="homeLeague">League</p>
+                <div class="strength-score" id="homeStrength">85</div>
+                <div class="win-probability" id="homeWin">45%</div>
+            </div>
+        </div>
+        
+        <div class="vs-divider">
+            <span>VS</span>
+        </div>
+        
+        <div class="team-result">
+            <div class="team-badge" id="awayResultBadge">✈️</div>
+            <div class="team-info">
+                <h4 id="awayName">Away Team</h4>
+                <p id="awayLeague">League</p>
+                <div class="strength-score" id="awayStrength">78</div>
+                <div class="win-probability" id="awayWin">35%</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="prediction">
+        <p class="prediction-label">Match Prediction</p>
+        <p class="prediction-result" id="predictionResult">Team to win</p>
+        <div class="prediction-confidence" id="confidence">Medium Confidence</div>
+        <p class="prediction-details" id="predictionDetails">Analysis details...</p>
+    </div>
+    
+    <!-- Betting Odds will be included here -->
+    {% include 'components/betting_odds.html' %}
+</div>

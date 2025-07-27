@@ -1,0 +1,121 @@
+<!-- Main JavaScript Component -->
+<script>
+// Team switching functionality
+function switchTab(tab) {
+    // Update tab buttons
+    document.getElementById('clubsTab').classList.toggle('active', tab === 'clubs');
+    document.getElementById('countriesTab').classList.toggle('active', tab === 'countries');
+    
+    // Note: In full implementation, this would filter the team options
+    console.log('Switched to', tab, 'tab');
+}
+
+// Swap teams functionality
+function swapTeams() {
+    const homeSelect = document.getElementById('homeTeam');
+    const awaySelect = document.getElementById('awayTeam');
+    
+    const homeValue = homeSelect.value;
+    const awayValue = awaySelect.value;
+    
+    homeSelect.value = awayValue;
+    awaySelect.value = homeValue;
+    
+    updateButton();
+}
+
+// Update button state
+function updateButton() {
+    const homeTeam = document.getElementById('homeTeam').value;
+    const awayTeam = document.getElementById('awayTeam').value;
+    const btn = document.getElementById('analyzeBtn');
+    
+    btn.disabled = !(homeTeam && awayTeam && homeTeam !== awayTeam);
+}
+
+// Main analysis function
+function analyzeMatch() {
+    const homeTeam = document.getElementById('homeTeam').value;
+    const awayTeam = document.getElementById('awayTeam').value;
+    
+    if (!homeTeam || !awayTeam || homeTeam === awayTeam) {
+        alert('Please select two different teams');
+        return;
+    }
+    
+    // Show loading state
+    const resultsSection = document.getElementById('resultContent');
+    resultsSection.style.display = 'block';
+    
+    // Update loading state
+    document.getElementById('matchTitle').textContent = homeTeam + ' vs ' + awayTeam;
+    document.getElementById('homeName').textContent = homeTeam;
+    document.getElementById('awayName').textContent = awayTeam;
+    document.getElementById('predictionResult').textContent = 'Analyzing match...';
+    
+    // Hide betting odds initially
+    document.getElementById('bettingOddsContainer').style.display = 'none';
+    
+    // Make API call
+    fetch('/analyze', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            home_team: homeTeam,
+            away_team: awayTeam
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Analysis result:', data);
+        showResults(data);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        document.getElementById('predictionResult').textContent = 'Error analyzing match: ' + error.message;
+    });
+}
+
+// Show results function
+function showResults(data) {
+    // Update match info
+    document.getElementById('matchType').textContent = data.score_type;
+    document.getElementById('matchTitle').textContent = data.home_team.name + ' vs ' + data.away_team.name;
+    
+    // Update team details
+    document.getElementById('homeName').textContent = data.home_team.name;
+    document.getElementById('homeLeague').textContent = data.home_team.league;
+    document.getElementById('homeStrength').textContent = Math.round(data.home_strength);
+    document.getElementById('homeWin').textContent = data.home_probability + '%';
+    
+    document.getElementById('awayName').textContent = data.away_team.name;
+    document.getElementById('awayLeague').textContent = data.away_team.league;
+    document.getElementById('awayStrength').textContent = Math.round(data.away_strength);
+    document.getElementById('awayWin').textContent = data.away_probability + '%';
+    
+    // Update prediction
+    document.getElementById('predictionResult').textContent = data.favorite + ' to win';
+    
+    // Calculate confidence level
+    const diff = Math.abs(data.home_probability - data.away_probability);
+    let confidence = 'Low Confidence';
+    if (diff > 30) confidence = 'High Confidence';
+    else if (diff > 15) confidence = 'Medium Confidence';
+    
+    document.getElementById('confidence').textContent = confidence;
+    document.getElementById('predictionDetails').textContent = data.explanation;
+    
+    // Display betting odds if available
+    if (data.betting_odds) {
+        displayBettingOdds(data.betting_odds, data.home_team.name, data.away_team.name);
+    }
+}
+
+// Initialize page
+document.addEventListener('DOMContentLoaded', function() {
+    updateButton();
+    console.log('Spooky Football Engine loaded with modular components');
+});
+</script>

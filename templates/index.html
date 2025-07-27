@@ -4,132 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Match Predictor | Football Strength Analyzer</title>
-    <!-- Template Version: Phase 3 Modular Components - 2025-07-27-17:00 -->
+    <!-- Template Version: Phase 3 Complete Modular Interface - 2025-07-27-17:15 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
-    <!-- Core CSS (keeping minimal inline for now) -->
-    <style>
-        :root {
-            --bg-primary: #0a0a0f;
-            --bg-secondary: #1a1a2e;
-            --bg-hover: #16213e;
-            --text-primary: #ffffff;
-            --text-secondary: #a0a3bd;
-            --accent: #00ff88;
-            --border: #2a2a3e;
-            --gradient-bg: linear-gradient(180deg, #050510 0%, #0a0a1a 100%);
-        }
-        
-        body {
-            font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-            line-height: 1.6;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
-        .test-banner {
-            background: var(--accent);
-            color: var(--bg-primary);
-            padding: 15px;
-            text-align: center;
-            font-weight: 600;
-            margin-bottom: 20px;
-            border-radius: 10px;
-        }
-        
-        .analyze-btn {
-            background: var(--accent);
-            color: var(--bg-primary);
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            margin: 20px 0;
-        }
-        
-        .results-section {
-            background: var(--bg-secondary);
-            border-radius: 12px;
-            padding: 20px;
-            margin: 20px 0;
-            display: none;
-        }
-    </style>
-    
-    <!-- Include Betting Odds CSS Component -->
+    <!-- Include All CSS Components -->
+    {% include 'components/core_styles.html' %}
+    {% include 'components/match_results_css.html' %}
     {% include 'components/betting_odds_css.html' %}
 </head>
 <body>
     <div class="container">
-        <div class="test-banner">
-            🧩 MODULAR TEMPLATE TEST - Phase 3 Betting Odds Components
-        </div>
+        <!-- Header -->
+        <header class="header">
+            <h1>Spooky</h1>
+            <p class="header-subtitle">Advanced football analytics & predictions</p>
+        </header>
         
-        <h1>Spooky Football Engine</h1>
-        <p>Simplified template with modular betting odds components</p>
+        <!-- Team Selection Component -->
+        {% include 'components/team_selection.html' %}
         
-        <button class="analyze-btn" onclick="testAnalysis()">Test Liverpool vs Chelsea Analysis</button>
-        
-        <div class="results-section" id="resultsSection">
-            <h3>Match Analysis Results</h3>
-            <div id="basicResults">
-                <!-- Basic results will go here -->
-            </div>
-            
-            <!-- Include Betting Odds HTML Component -->
-            {% include 'components/betting_odds.html' %}
-        </div>
+        <!-- Match Results Component -->
+        {% include 'components/match_results.html' %}
     </div>
     
-    <!-- Include Betting Odds JavaScript Component -->
+    <!-- Include All JavaScript Components -->
     {% include 'components/betting_odds_js.html' %}
-    
-    <script>
-        function testAnalysis() {
-            document.getElementById('resultsSection').style.display = 'block';
-            document.getElementById('basicResults').innerHTML = '<p>⏳ Analyzing Liverpool vs Chelsea...</p>';
-            
-            fetch('/analyze', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    home_team: 'Liverpool',
-                    away_team: 'Chelsea'
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log('API Response:', data);
-                
-                // Show basic results
-                document.getElementById('basicResults').innerHTML = `
-                    <p><strong>Home:</strong> ${data.home_team.name} (${data.home_probability}%)</p>
-                    <p><strong>Away:</strong> ${data.away_team.name} (${data.away_probability}%)</p>
-                    <p><strong>Favorite:</strong> ${data.favorite}</p>
-                `;
-                
-                // Display betting odds using the modular component
-                if (data.betting_odds) {
-                    displayBettingOdds(data.betting_odds, data.home_team.name, data.away_team.name);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                document.getElementById('basicResults').innerHTML = '<p>❌ Error: ' + error.message + '</p>';
-            });
-        }
-    </script>
+    {% include 'components/main_javascript.html' %}
 </body>
 </html>
