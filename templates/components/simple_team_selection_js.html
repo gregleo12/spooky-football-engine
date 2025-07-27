@@ -41,35 +41,133 @@ const allTeams = {
     ]
 };
 
-// Initialize team dropdowns
+// Initialize team dropdowns with search
 function initializeTeamSelects() {
-    const homeSelect = document.getElementById('homeTeam');
-    const awaySelect = document.getElementById('awayTeam');
+    populateDropdown('home');
+    populateDropdown('away');
+}
+
+// Populate dropdown with teams
+function populateDropdown(side) {
+    const dropdownContent = document.getElementById(side + 'DropdownContent');
+    if (!dropdownContent) return;
     
-    if (!homeSelect || !awaySelect) return;
+    dropdownContent.innerHTML = '';
     
-    // Clear existing options
-    homeSelect.innerHTML = '<option value="">Select home team...</option>';
-    awaySelect.innerHTML = '<option value="">Select away team...</option>';
-    
-    // Add teams by league
     Object.keys(allTeams).forEach(league => {
-        const optgroup = document.createElement('optgroup');
-        optgroup.label = league;
+        // Add league header
+        const leagueHeader = document.createElement('div');
+        leagueHeader.className = 'league-header';
+        leagueHeader.textContent = league;
+        dropdownContent.appendChild(leagueHeader);
         
-        const optgroup2 = document.createElement('optgroup');
-        optgroup2.label = league;
-        
+        // Add teams
         allTeams[league].forEach(team => {
-            const option1 = new Option(team, team);
-            const option2 = new Option(team, team);
-            optgroup.appendChild(option1);
-            optgroup2.appendChild(option2);
+            const teamOption = document.createElement('div');
+            teamOption.className = 'team-option';
+            teamOption.innerHTML = `
+                <span class="team-flag">${getTeamFlag(league)}</span>
+                <span>${team}</span>
+            `;
+            teamOption.onclick = () => selectTeam(side, team);
+            dropdownContent.appendChild(teamOption);
         });
-        
-        homeSelect.appendChild(optgroup);
-        awaySelect.appendChild(optgroup2);
     });
+}
+
+// Get team flag emoji
+function getTeamFlag(league) {
+    const flags = {
+        'Premier League': '🏴󐁧󐁢󐁥󐁮󐁧󐁿',
+        'La Liga': '🇪🇸',
+        'Serie A': '🇮🇹',
+        'Bundesliga': '🇩🇪',
+        'Ligue 1': '🇫🇷',
+        'International': '🌍'
+    };
+    return flags[league] || '⚽';
+}
+
+// Show dropdown
+function showDropdown(side) {
+    const dropdown = document.getElementById(side + 'Dropdown');
+    if (dropdown) {
+        dropdown.classList.add('show');
+        // Hide other dropdown
+        const otherSide = side === 'home' ? 'away' : 'home';
+        const otherDropdown = document.getElementById(otherSide + 'Dropdown');
+        if (otherDropdown) {
+            otherDropdown.classList.remove('show');
+        }
+    }
+}
+
+// Hide dropdowns when clicking outside
+document.addEventListener('click', function(event) {
+    if (!event.target.closest('.search-container')) {
+        document.querySelectorAll('.search-dropdown').forEach(dropdown => {
+            dropdown.classList.remove('show');
+        });
+    }
+});
+
+// Filter teams based on search
+function filterTeams(side) {
+    const searchInput = document.getElementById(side + 'TeamSearch');
+    const filter = searchInput.value.toLowerCase();
+    const dropdownContent = document.getElementById(side + 'DropdownContent');
+    
+    if (!dropdownContent) return;
+    
+    dropdownContent.innerHTML = '';
+    
+    let hasResults = false;
+    
+    Object.keys(allTeams).forEach(league => {
+        const filteredTeams = allTeams[league].filter(team => 
+            team.toLowerCase().includes(filter)
+        );
+        
+        if (filteredTeams.length > 0) {
+            hasResults = true;
+            
+            // Add league header
+            const leagueHeader = document.createElement('div');
+            leagueHeader.className = 'league-header';
+            leagueHeader.textContent = league;
+            dropdownContent.appendChild(leagueHeader);
+            
+            // Add filtered teams
+            filteredTeams.forEach(team => {
+                const teamOption = document.createElement('div');
+                teamOption.className = 'team-option';
+                teamOption.innerHTML = `
+                    <span class="team-flag">${getTeamFlag(league)}</span>
+                    <span>${team}</span>
+                `;
+                teamOption.onclick = () => selectTeam(side, team);
+                dropdownContent.appendChild(teamOption);
+            });
+        }
+    });
+    
+    if (!hasResults) {
+        dropdownContent.innerHTML = '<div class="no-results">No teams found</div>';
+    }
+}
+
+// Select team
+function selectTeam(side, teamName) {
+    const searchInput = document.getElementById(side + 'TeamSearch');
+    const hiddenInput = document.getElementById(side + 'Team');
+    const dropdown = document.getElementById(side + 'Dropdown');
+    
+    if (searchInput && hiddenInput) {
+        searchInput.value = teamName;
+        hiddenInput.value = teamName;
+        dropdown.classList.remove('show');
+        updateButton();
+    }
 }
 
 // Update button state
@@ -91,14 +189,24 @@ function updateButton() {
 
 // Swap teams
 function swapTeams() {
-    const homeSelect = document.getElementById('homeTeam');
-    const awaySelect = document.getElementById('awayTeam');
+    const homeInput = document.getElementById('homeTeam');
+    const awayInput = document.getElementById('awayTeam');
+    const homeSearch = document.getElementById('homeTeamSearch');
+    const awaySearch = document.getElementById('awayTeamSearch');
     
-    const temp = homeSelect.value;
-    homeSelect.value = awaySelect.value;
-    awaySelect.value = temp;
-    
-    updateButton();
+    if (homeInput && awayInput && homeSearch && awaySearch) {
+        // Swap hidden values
+        const tempValue = homeInput.value;
+        homeInput.value = awayInput.value;
+        awayInput.value = tempValue;
+        
+        // Swap search display values
+        const tempSearch = homeSearch.value;
+        homeSearch.value = awaySearch.value;
+        awaySearch.value = tempSearch;
+        
+        updateButton();
+    }
 }
 
 // Analyze match

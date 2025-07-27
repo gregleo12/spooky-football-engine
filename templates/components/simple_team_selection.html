@@ -4,15 +4,26 @@
         <span style="background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; filter: drop-shadow(0 0 10px rgba(0, 255, 240, 0.4));">Select Match</span>
     </h2>
     
-    <!-- Clean Team Selection Grid -->
+    <!-- Clean Team Selection Grid with Search -->
     <div class="team-selection-grid">
         <!-- Home Team -->
         <div class="team-selector">
-            <label for="homeTeam">Home Team</label>
-            <select id="homeTeam" class="team-select" onchange="updateButton()">
-                <option value="">Select home team...</option>
-                <!-- Teams will be populated by JavaScript -->
-            </select>
+            <label for="homeTeamSearch">Home Team</label>
+            <div class="search-container">
+                <input type="text" 
+                       id="homeTeamSearch" 
+                       class="team-search-input"
+                       placeholder="Search or select team..."
+                       onkeyup="filterTeams('home')"
+                       onfocus="showDropdown('home')"
+                       autocomplete="off">
+                <div class="search-dropdown" id="homeDropdown">
+                    <div class="dropdown-content" id="homeDropdownContent">
+                        <!-- Teams will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+            <input type="hidden" id="homeTeam" onchange="updateButton()">
         </div>
         
         <!-- VS Section -->
@@ -23,11 +34,22 @@
         
         <!-- Away Team -->
         <div class="team-selector">
-            <label for="awayTeam">Away Team</label>
-            <select id="awayTeam" class="team-select" onchange="updateButton()">
-                <option value="">Select away team...</option>
-                <!-- Teams will be populated by JavaScript -->
-            </select>
+            <label for="awayTeamSearch">Away Team</label>
+            <div class="search-container">
+                <input type="text" 
+                       id="awayTeamSearch" 
+                       class="team-search-input"
+                       placeholder="Search or select team..."
+                       onkeyup="filterTeams('away')"
+                       onfocus="showDropdown('away')"
+                       autocomplete="off">
+                <div class="search-dropdown" id="awayDropdown">
+                    <div class="dropdown-content" id="awayDropdownContent">
+                        <!-- Teams will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+            <input type="hidden" id="awayTeam" onchange="updateButton()">
         </div>
     </div>
     
@@ -75,7 +97,11 @@
     letter-spacing: 0.05em;
 }
 
-.team-select {
+.search-container {
+    position: relative;
+}
+
+.team-search-input {
     width: 100%;
     background: rgba(26, 26, 46, 0.6);
     border: 1px solid var(--border-primary);
@@ -84,25 +110,105 @@
     color: var(--text-primary);
     font-size: 1rem;
     font-weight: 500;
-    cursor: pointer;
     transition: all 0.3s ease;
 }
 
-.team-select:hover {
+.team-search-input:hover {
     border-color: var(--neon-cyan);
     background: rgba(26, 26, 46, 0.8);
 }
 
-.team-select:focus {
+.team-search-input:focus {
     outline: none;
     border-color: var(--neon-cyan);
     box-shadow: 0 0 20px rgba(0, 255, 240, 0.3);
 }
 
-.team-select option {
-    background: var(--bg-secondary);
-    color: var(--text-primary);
+.search-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: rgba(26, 26, 46, 0.98);
+    border: 1px solid var(--border-primary);
+    border-radius: 12px;
+    margin-top: 4px;
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 100;
+    display: none;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.search-dropdown.show {
+    display: block;
+}
+
+.dropdown-content {
     padding: 8px;
+}
+
+.team-option {
+    padding: 10px 12px;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.team-option:hover {
+    background: rgba(0, 255, 240, 0.1);
+    color: var(--neon-cyan);
+}
+
+.team-option.selected {
+    background: rgba(0, 255, 240, 0.2);
+    color: var(--neon-cyan);
+}
+
+.league-header {
+    padding: 8px 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 4px;
+}
+
+.team-flag {
+    font-size: 1.2rem;
+}
+
+.no-results {
+    padding: 20px;
+    text-align: center;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+/* Scrollbar styling for dropdown */
+.search-dropdown::-webkit-scrollbar {
+    width: 8px;
+}
+
+.search-dropdown::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+}
+
+.search-dropdown::-webkit-scrollbar-thumb {
+    background: var(--neon-cyan);
+    border-radius: 4px;
+    opacity: 0.5;
+}
+
+.search-dropdown::-webkit-scrollbar-thumb:hover {
+    opacity: 0.8;
 }
 
 .vs-section {
