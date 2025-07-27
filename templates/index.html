@@ -1137,6 +1137,103 @@
                 text-align: center;
             }
         }
+
+        /* Betting Odds Display Styles */
+        .betting-odds-container {
+            margin-top: 30px;
+            background: var(--bg-secondary);
+            border-radius: 20px;
+            padding: 24px;
+            border: 1px solid var(--border);
+        }
+
+        .odds-section {
+            margin-bottom: 24px;
+        }
+
+        .odds-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .odds-section-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .odds-icon {
+            font-size: 20px;
+        }
+
+        .odds-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .odds-grid.two-column {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .odds-item {
+            background: var(--bg-hover);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .odds-item:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+            background: rgba(0, 255, 136, 0.05);
+        }
+
+        .odds-team {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin: 0 0 8px 0;
+        }
+
+        .odds-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--accent);
+            margin: 0 0 4px 0;
+        }
+
+        .odds-probability {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin: 0;
+        }
+
+        /* Responsive design for mobile */
+        @media (max-width: 768px) {
+            .odds-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .betting-odds-container {
+                padding: 16px;
+                margin-top: 20px;
+            }
+
+            .odds-section-title {
+                font-size: 16px;
+            }
+
+            .odds-value {
+                font-size: 20px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1296,6 +1393,74 @@
                         <p class="prediction-result" id="predictionResult"></p>
                         <div class="prediction-confidence" id="confidence"></div>
                         <p class="prediction-details" id="predictionDetails"></p>
+                    </div>
+                    
+                    <!-- Betting Odds Display -->
+                    <div class="betting-odds-container" id="bettingOddsContainer" style="display: none;">
+                        <!-- Match Outcome Odds -->
+                        <div class="odds-section">
+                            <h3 class="odds-section-title">
+                                <span class="odds-icon">🎯</span>
+                                Match Outcome Odds
+                            </h3>
+                            <div class="odds-grid">
+                                <div class="odds-item">
+                                    <p class="odds-team" id="homeOddsTeam">Home</p>
+                                    <p class="odds-value" id="homeOdds">-</p>
+                                    <p class="odds-probability" id="homeOddsProb">-</p>
+                                </div>
+                                <div class="odds-item">
+                                    <p class="odds-team">Draw</p>
+                                    <p class="odds-value" id="drawOdds">-</p>
+                                    <p class="odds-probability" id="drawOddsProb">-</p>
+                                </div>
+                                <div class="odds-item">
+                                    <p class="odds-team" id="awayOddsTeam">Away</p>
+                                    <p class="odds-value" id="awayOdds">-</p>
+                                    <p class="odds-probability" id="awayOddsProb">-</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Goals Market -->
+                        <div class="odds-section">
+                            <h3 class="odds-section-title">
+                                <span class="odds-icon">⚽</span>
+                                Over/Under 2.5 Goals
+                            </h3>
+                            <div class="odds-grid two-column">
+                                <div class="odds-item">
+                                    <p class="odds-team">Over 2.5</p>
+                                    <p class="odds-value" id="over25Odds">-</p>
+                                    <p class="odds-probability" id="over25Prob">-</p>
+                                </div>
+                                <div class="odds-item">
+                                    <p class="odds-team">Under 2.5</p>
+                                    <p class="odds-value" id="under25Odds">-</p>
+                                    <p class="odds-probability" id="under25Prob">-</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Both Teams to Score -->
+                        <div class="odds-section">
+                            <h3 class="odds-section-title">
+                                <span class="odds-icon">🥅</span>
+                                Both Teams to Score
+                            </h3>
+                            <div class="odds-grid two-column">
+                                <div class="odds-item">
+                                    <p class="odds-team">Yes</p>
+                                    <p class="odds-value" id="bttsYesOdds">-</p>
+                                    <p class="odds-probability" id="bttsYesProb">-</p>
+                                </div>
+                                <div class="odds-item">
+                                    <p class="odds-team">No</p>
+                                    <p class="odds-value" id="bttsNoOdds">-</p>
+                                    <p class="odds-probability" id="bttsNoProb">-</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1962,8 +2127,65 @@
             document.getElementById('confidence').textContent = confidence;
             document.getElementById('predictionDetails').textContent = data.explanation;
             
+            // Display betting odds if available
+            if (data.betting_odds) {
+                displayBettingOdds(data.betting_odds, data.home_team.name, data.away_team.name);
+            }
+            
             // Show results
             document.getElementById('resultContent').style.display = 'block';
+        }
+        
+        function displayBettingOdds(bettingOdds, homeTeam, awayTeam) {
+            // Update team names in odds display
+            document.getElementById('homeOddsTeam').textContent = homeTeam;
+            document.getElementById('awayOddsTeam').textContent = awayTeam;
+            
+            // Match Outcome Odds
+            if (bettingOdds.match_outcome) {
+                const matchOdds = bettingOdds.match_outcome;
+                
+                // Home Win
+                document.getElementById('homeOdds').textContent = matchOdds.home_win.odds;
+                document.getElementById('homeOddsProb').textContent = matchOdds.home_win.probability + '%';
+                
+                // Draw
+                document.getElementById('drawOdds').textContent = matchOdds.draw.odds;
+                document.getElementById('drawOddsProb').textContent = matchOdds.draw.probability + '%';
+                
+                // Away Win
+                document.getElementById('awayOdds').textContent = matchOdds.away_win.odds;
+                document.getElementById('awayOddsProb').textContent = matchOdds.away_win.probability + '%';
+            }
+            
+            // Goals Market
+            if (bettingOdds.goals_market) {
+                const goalsOdds = bettingOdds.goals_market;
+                
+                // Over 2.5
+                document.getElementById('over25Odds').textContent = goalsOdds.over_2_5.odds;
+                document.getElementById('over25Prob').textContent = goalsOdds.over_2_5.probability + '%';
+                
+                // Under 2.5
+                document.getElementById('under25Odds').textContent = goalsOdds.under_2_5.odds;
+                document.getElementById('under25Prob').textContent = goalsOdds.under_2_5.probability + '%';
+            }
+            
+            // BTTS Market
+            if (bettingOdds.btts_market) {
+                const bttsOdds = bettingOdds.btts_market;
+                
+                // BTTS Yes
+                document.getElementById('bttsYesOdds').textContent = bttsOdds.yes.odds;
+                document.getElementById('bttsYesProb').textContent = bttsOdds.yes.probability + '%';
+                
+                // BTTS No
+                document.getElementById('bttsNoOdds').textContent = bttsOdds.no.odds;
+                document.getElementById('bttsNoProb').textContent = bttsOdds.no.probability + '%';
+            }
+            
+            // Show the betting odds container
+            document.getElementById('bettingOddsContainer').style.display = 'block';
         }
         
         function showError(message) {
