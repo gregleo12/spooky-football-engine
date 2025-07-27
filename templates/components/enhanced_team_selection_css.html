@@ -90,7 +90,40 @@
 }
 
 .dropdown-content {
-    padding: 8px 0;
+    padding: 4px 0;
+}
+
+/* League Sections */
+.league-section {
+    margin-bottom: 8px;
+}
+
+.league-section:last-child {
+    margin-bottom: 0;
+}
+
+.league-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px 4px 16px;
+    background: var(--bg-primary);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.league-flag {
+    font-size: 16px;
+}
+
+.league-name {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .team-option {

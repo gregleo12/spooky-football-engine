@@ -59,15 +59,69 @@ function populateTeamDropdowns() {
     
     if (!homeContent || !awayContent) return;
     
-    const teamOptionsHtml = allTeams.map(team => `
-        <div class="team-option" onclick="selectTeam('${team.name}', 'home')" data-team="${team.name.toLowerCase()}">
-            <div class="team-flag">${getTeamFlag(team.league)}</div>
-            <div class="team-info">
-                <div class="team-name">${team.name}</div>
-                <div class="team-league">${team.league}</div>
-            </div>
-        </div>
-    `).join('');
+    // Define league order
+    const leagueOrder = ['Premier League', 'La Liga', 'Serie A', 'Bundesliga', 'Ligue 1'];
+    
+    // Group teams by league
+    const teamsByLeague = {};
+    allTeams.forEach(team => {
+        if (!teamsByLeague[team.league]) {
+            teamsByLeague[team.league] = [];
+        }
+        teamsByLeague[team.league].push(team);
+    });
+    
+    // Sort teams within each league alphabetically
+    Object.keys(teamsByLeague).forEach(league => {
+        teamsByLeague[league].sort((a, b) => a.name.localeCompare(b.name));
+    });
+    
+    // Build HTML with league sections
+    let teamOptionsHtml = '';
+    leagueOrder.forEach(league => {
+        if (teamsByLeague[league]) {
+            teamOptionsHtml += `
+                <div class="league-section">
+                    <div class="league-header">
+                        <span class="league-flag">${getTeamFlag(league)}</span>
+                        <span class="league-name">${league}</span>
+                    </div>
+                    ${teamsByLeague[league].map(team => `
+                        <div class="team-option" onclick="selectTeam('${team.name}', 'home')" data-team="${team.name.toLowerCase()}" data-league="${league.toLowerCase()}">
+                            <div class="team-flag">${getTeamFlag(team.league)}</div>
+                            <div class="team-info">
+                                <div class="team-name">${team.name}</div>
+                                <div class="team-league">${team.league}</div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+    });
+    
+    // Add any remaining leagues not in the main order
+    Object.keys(teamsByLeague).forEach(league => {
+        if (!leagueOrder.includes(league)) {
+            teamOptionsHtml += `
+                <div class="league-section">
+                    <div class="league-header">
+                        <span class="league-flag">${getTeamFlag(league)}</span>
+                        <span class="league-name">${league}</span>
+                    </div>
+                    ${teamsByLeague[league].map(team => `
+                        <div class="team-option" onclick="selectTeam('${team.name}', 'home')" data-team="${team.name.toLowerCase()}" data-league="${league.toLowerCase()}">
+                            <div class="team-flag">${getTeamFlag(team.league)}</div>
+                            <div class="team-info">
+                                <div class="team-name">${team.name}</div>
+                                <div class="team-league">${team.league}</div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+    });
     
     homeContent.innerHTML = teamOptionsHtml;
     awayContent.innerHTML = teamOptionsHtml.replace(/home/g, 'away');
@@ -173,16 +227,31 @@ function randomMatchup() {
 
 // Swap teams
 function swapTeams() {
+    console.log('=== SWAP TEAMS FUNCTION CALLED ===');
+    
     const homeInput = document.getElementById('homeTeamSearch');
     const awayInput = document.getElementById('awayTeamSearch');
     const homeHidden = document.getElementById('homeTeam');
     const awayHidden = document.getElementById('awayTeam');
     
-    console.log('Swapping teams...');
-    console.log('Home input:', homeInput?.value);
-    console.log('Away input:', awayInput?.value);
+    console.log('Elements found:');
+    console.log('- homeInput:', homeInput);
+    console.log('- awayInput:', awayInput);
+    console.log('- homeHidden:', homeHidden);
+    console.log('- awayHidden:', awayHidden);
+    
+    if (!homeInput) console.error('homeTeamSearch element not found');
+    if (!awayInput) console.error('awayTeamSearch element not found');
+    if (!homeHidden) console.error('homeTeam hidden input not found');
+    if (!awayHidden) console.error('awayTeam hidden input not found');
     
     if (homeInput && awayInput && homeHidden && awayHidden) {
+        console.log('Before swap:');
+        console.log('- Home display:', homeInput.value);
+        console.log('- Away display:', awayInput.value);
+        console.log('- Home hidden:', homeHidden.value);
+        console.log('- Away hidden:', awayHidden.value);
+        
         // Swap display values
         const tempDisplay = homeInput.value;
         homeInput.value = awayInput.value;
@@ -193,16 +262,37 @@ function swapTeams() {
         homeHidden.value = awayHidden.value;
         awayHidden.value = tempHidden;
         
-        // Update classes
-        homeInput.classList.toggle('has-selection', homeInput.value !== '');
-        awayInput.classList.toggle('has-selection', awayInput.value !== '');
+        // Update visual classes
+        if (homeInput.value) {
+            homeInput.classList.add('has-selection');
+        } else {
+            homeInput.classList.remove('has-selection');
+        }
+        
+        if (awayInput.value) {
+            awayInput.classList.add('has-selection');
+        } else {
+            awayInput.classList.remove('has-selection');
+        }
+        
+        console.log('After swap:');
+        console.log('- Home display:', homeInput.value);
+        console.log('- Away display:', awayInput.value);
+        console.log('- Home hidden:', homeHidden.value);
+        console.log('- Away hidden:', awayHidden.value);
         
         updateButton();
         updateMatchPreview();
         
-        console.log('After swap - Home:', homeInput.value, 'Away:', awayInput.value);
+        console.log('=== SWAP COMPLETED SUCCESSFULLY ===');
     } else {
-        console.error('Swap failed - missing elements');
+        console.error('=== SWAP FAILED - MISSING ELEMENTS ===');
+        // Try alternative approach - look for any team inputs
+        const allInputs = document.querySelectorAll('input[id*="Team"]');
+        console.log('All team-related inputs found:', allInputs);
+        allInputs.forEach(input => {
+            console.log(`- ${input.id}: ${input.value}`);
+        });
     }
 }
 

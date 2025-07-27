@@ -113,20 +113,29 @@ function updatePredictedScore(data) {
 
 // Calculate top 5 most probable scores
 function calculateTopProbableScores(data) {
-    const homeStrength = data.home_strength / 100;
-    const awayStrength = data.away_strength / 100;
-    const homeAdv = 0.1; // Home advantage
+    console.log('Calculating scores for:', data.home_team.name, 'vs', data.away_team.name);
+    console.log('Home strength:', data.home_strength, 'Away strength:', data.away_strength);
     
-    // Expected goals based on team strengths
-    const homeExpected = (homeStrength + homeAdv) * 2.5;
-    const awayExpected = awayStrength * 2.2;
+    // More realistic expected goals calculation
+    const homeStrength = Math.max(0.3, Math.min(1.0, data.home_strength / 100));
+    const awayStrength = Math.max(0.3, Math.min(1.0, data.away_strength / 100));
+    const homeAdv = 0.15; // 15% home advantage
+    
+    // Expected goals based on team strengths with more variation
+    const baseGoals = 1.2; // Minimum expected goals
+    const maxGoals = 3.5;  // Maximum expected goals
+    
+    const homeExpected = baseGoals + (homeStrength + homeAdv) * (maxGoals - baseGoals);
+    const awayExpected = baseGoals + awayStrength * (maxGoals - baseGoals);
+    
+    console.log('Expected goals - Home:', homeExpected.toFixed(2), 'Away:', awayExpected.toFixed(2));
     
     const scores = [];
     
-    // Generate possible scores (0-0 to 4-4)
-    for (let h = 0; h <= 4; h++) {
-        for (let a = 0; a <= 4; a++) {
-            // Poisson distribution approximation
+    // Generate possible scores (0-0 to 5-5 for more variety)
+    for (let h = 0; h <= 5; h++) {
+        for (let a = 0; a <= 5; a++) {
+            // Poisson distribution
             const homeProb = poissonProbability(h, homeExpected);
             const awayProb = poissonProbability(a, awayExpected);
             const totalProb = homeProb * awayProb;
@@ -141,7 +150,14 @@ function calculateTopProbableScores(data) {
     }
     
     // Sort by probability and return top 5
-    return scores.sort((a, b) => b.probability - a.probability).slice(0, 5);
+    const topScores = scores.sort((a, b) => b.probability - a.probability).slice(0, 5);
+    
+    console.log('Top 5 scores calculated:');
+    topScores.forEach((score, index) => {
+        console.log(`${index + 1}. ${score.score} - ${(score.probability * 100).toFixed(2)}%`);
+    });
+    
+    return topScores;
 }
 
 // Poisson probability calculation
@@ -157,28 +173,49 @@ function factorial(n) {
 
 // Update top scores display
 function updateTopScoresDisplay(scores) {
-    const predictedScoreElement = document.getElementById('predictedScore');
-    if (!predictedScoreElement) return;
+    console.log('Updating top scores display with:', scores);
     
-    // Create or update top scores container
-    let topScoresContainer = document.querySelector('.top-scores-container');
-    if (!topScoresContainer) {
-        topScoresContainer = document.createElement('div');
-        topScoresContainer.className = 'top-scores-container';
-        predictedScoreElement.parentNode.appendChild(topScoresContainer);
+    const predictedScoreElement = document.getElementById('predictedScore');
+    if (!predictedScoreElement) {
+        console.error('predictedScore element not found');
+        return;
     }
     
+    // Find or create container in the parent section
+    const scoreSection = predictedScoreElement.closest('.predicted-score');
+    if (!scoreSection) {
+        console.error('predicted-score section not found');
+        return;
+    }
+    
+    // Remove existing top scores container
+    const existingContainer = scoreSection.querySelector('.top-scores-container');
+    if (existingContainer) {
+        existingContainer.remove();
+    }
+    
+    // Create new top scores container
+    const topScoresContainer = document.createElement('div');
+    topScoresContainer.className = 'top-scores-container';
+    
+    const scoresHtml = scores.map((score, index) => `
+        <div class="score-option ${index === 0 ? 'primary' : ''}" title="Probability: ${(score.probability * 100).toFixed(2)}%">
+            <div class="score-text">${score.score}</div>
+            <div class="score-prob">${(score.probability * 100).toFixed(1)}%</div>
+        </div>
+    `).join('');
+    
     topScoresContainer.innerHTML = `
-        <div class="top-scores-title">Most Likely Scores:</div>
+        <div class="top-scores-title">Top 5 Most Likely Scores:</div>
         <div class="top-scores-grid">
-            ${scores.map((score, index) => `
-                <div class="score-option ${index === 0 ? 'primary' : ''}">
-                    <div class="score-text">${score.score}</div>
-                    <div class="score-prob">${(score.probability * 100).toFixed(1)}%</div>
-                </div>
-            `).join('')}
+            ${scoresHtml}
         </div>
     `;
+    
+    // Append to the score section
+    scoreSection.appendChild(topScoresContainer);
+    
+    console.log('Top scores display updated successfully');
 }
 
 // Update prediction with enhanced confidence visualization
