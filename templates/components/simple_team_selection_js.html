@@ -78,7 +78,7 @@ function populateDropdown(side) {
 // Get team flag emoji
 function getTeamFlag(league) {
     const flags = {
-        'Premier League': '🏴󐁧󐁢󐁥󐁮󐁧󐁿',
+        'Premier League': '🏴',
         'La Liga': '🇪🇸',
         'Serie A': '🇮🇹',
         'Bundesliga': '🇩🇪',
@@ -88,8 +88,8 @@ function getTeamFlag(league) {
     return flags[league] || '⚽';
 }
 
-// Show dropdown
-function showDropdown(side) {
+// Show dropdown - make it globally accessible
+window.showDropdown = function(side) {
     const dropdown = document.getElementById(side + 'Dropdown');
     if (dropdown) {
         dropdown.classList.add('show');
@@ -111,8 +111,8 @@ document.addEventListener('click', function(event) {
     }
 });
 
-// Filter teams based on search
-function filterTeams(side) {
+// Filter teams based on search - make it globally accessible
+window.filterTeams = function(side) {
     const searchInput = document.getElementById(side + 'TeamSearch');
     const filter = searchInput.value.toLowerCase();
     const dropdownContent = document.getElementById(side + 'DropdownContent');
@@ -170,8 +170,8 @@ function selectTeam(side, teamName) {
     }
 }
 
-// Update button state
-function updateButton() {
+// Update button state - make it globally accessible
+window.updateButton = function() {
     const homeTeam = document.getElementById('homeTeam').value;
     const awayTeam = document.getElementById('awayTeam').value;
     const analyzeBtn = document.getElementById('analyzeBtn');
@@ -187,8 +187,8 @@ function updateButton() {
     }
 }
 
-// Swap teams
-function swapTeams() {
+// Swap teams - make it globally accessible
+window.swapTeams = function() {
     const homeInput = document.getElementById('homeTeam');
     const awayInput = document.getElementById('awayTeam');
     const homeSearch = document.getElementById('homeTeamSearch');
@@ -209,12 +209,15 @@ function swapTeams() {
     }
 }
 
-// Analyze match
-async function analyzeMatch() {
+// Analyze match - make it globally accessible
+window.analyzeMatch = async function() {
     const homeTeam = document.getElementById('homeTeam').value;
     const awayTeam = document.getElementById('awayTeam').value;
     
-    if (!homeTeam || !awayTeam) return;
+    if (!homeTeam || !awayTeam) {
+        alert('Please select both teams');
+        return;
+    }
     
     const analyzeBtn = document.getElementById('analyzeBtn');
     const btnText = analyzeBtn.querySelector('.btn-text');
@@ -241,7 +244,18 @@ async function analyzeMatch() {
         const data = await response.json();
         
         // Display results
-        displayResults(data);
+        if (window.displayResults) {
+            displayResults(data);
+        } else {
+            // Fallback display logic
+            document.getElementById('resultContent').style.display = 'block';
+            if (window.updateMatchAnalysis) {
+                updateMatchAnalysis(data);
+            }
+            if (data.betting_odds && window.displayBettingOdds) {
+                displayBettingOdds(data.betting_odds, data.home_team.name, data.away_team.name);
+            }
+        }
         
         // Show results container with smooth animation
         const resultsContainer = document.getElementById('resultsContainer');
