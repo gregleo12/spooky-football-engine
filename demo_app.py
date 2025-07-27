@@ -15,6 +15,8 @@ import os
 import json
 import sys
 from datetime import datetime
+
+# Note: Simple admin functionality now built into main app
 from database_config import db_config
 from environment_config import env_config, is_local, is_railway, log_startup_info
 
@@ -39,6 +41,8 @@ except ImportError as e:
     PHASE_3_AVAILABLE = False
 
 app = Flask(__name__)
+
+# Admin functionality built into main app routes
 
 # Initialize Phase 1-3 services based on environment
 if PHASE_3_AVAILABLE:
@@ -1440,18 +1444,78 @@ def debug_info_old():
 
 @app.route('/admin')
 def admin_dashboard():
+    """Simple admin page that won't crash"""
+    return f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Admin Dashboard</title>
+        <style>
+            body {{ background: #050510; color: white; font-family: Arial; padding: 20px; }}
+            .ok {{ color: #00ff88; }}
+        </style>
+    </head>
+    <body>
+        <h1>🛠️ Admin Dashboard</h1>
+        <p>Time: {datetime.now().isoformat()}</p>
+        <p class="ok">✅ Server is running</p>
+        
+        <h2>Quick Test:</h2>
+        <button onclick="test()">Test Analyze Function</button>
+        <div id="result"></div>
+        
+        <p><a href="/" style="color: #00ff88">← Back to Main App</a></p>
+        
+        <script>
+        function test() {{
+            document.getElementById('result').innerHTML = 'Testing...';
+            fetch('/analyze', {{
+                method: 'POST',
+                headers: {{'Content-Type': 'application/json'}},
+                body: JSON.stringify({{home_team: 'Manchester City', away_team: 'Arsenal'}})
+            }})
+            .then(r => r.json())
+            .then(d => {{
+                document.getElementById('result').innerHTML = 
+                    d.error ? '❌ Error: ' + d.error : 
+                    '✅ Works! ' + d.favorite + ' wins ' + d.favorite_probability.toFixed(1) + '%';
+            }})
+            .catch(e => {{
+                document.getElementById('result').innerHTML = '❌ Error: ' + e;
+            }});
+        }}
+        </script>
+    </body>
+    </html>
+    """
+
+@app.route('/admin-complex')
+def admin_dashboard_complex():
     """Consolidated admin dashboard with all diagnostic tools"""
     from datetime import datetime
     import traceback
     
     try:
         # Get system info
-        env = get_environment().value
-        db_type = db_config.get_db_type().lower()
+        try:
+            env = get_environment().value
+        except:
+            env = "unknown"
+            
+        try:
+            db_type = db_config.get_db_type().lower()
+        except:
+            db_type = "unknown"
+            
         current_time = datetime.now()
         
-        # Get team data
-        teams_by_league, all_teams = demo.get_all_teams()
+        # Get team data safely
+        try:
+            teams_by_league, all_teams = demo.get_all_teams()
+        except Exception as e:
+            teams_by_league = {}
+            all_teams = []
+            print(f"Error loading teams: {e}")
     
         # Database stats
         db_stats = {'teams': 0, 'competitions': 0, 'strength_records': 0}
@@ -1474,10 +1538,10 @@ def admin_dashboard():
     
         # Phase 3 status
         phase3_status = {
-        'tables_exist': False,
-        'existing_tables': 0,
-        'required_tables': 8
-    }
+            'tables_exist': False,
+            'existing_tables': 0,
+            'required_tables': 8
+        }
     
         if is_railway():
             try:
