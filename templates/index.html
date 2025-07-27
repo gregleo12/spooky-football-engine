@@ -1236,7 +1236,7 @@
                     </div>
                 </div>
                 
-                <button class="analyze-button" id="analyzeBtn" onclick="analyzeMatch()">
+                <button class="analyze-button" id="analyzeBtn" onclick="console.log('BUTTON CLICKED!'); analyzeMatch();">
                     Analyze Match
                 </button>
             </div>
@@ -1814,8 +1814,12 @@
         }
         
         function analyzeMatch() {
+            console.log('🚀 ANALYZE BUTTON CLICKED!');
+            
             let homeTeam = document.getElementById('homeTeam').value;
             let awayTeam = document.getElementById('awayTeam').value;
+            
+            console.log('Raw values:', {homeTeam, awayTeam});
             
             // Ensure we're working with strings, not objects
             if (typeof homeTeam === 'object' && homeTeam !== null) {
@@ -1824,6 +1828,8 @@
             if (typeof awayTeam === 'object' && awayTeam !== null) {
                 awayTeam = awayTeam.name || awayTeam.toString();
             }
+            
+            console.log('Processed values:', {homeTeam, awayTeam});
             
             if (!homeTeam || !awayTeam) {
                 showError('Please select both teams');
@@ -2552,9 +2558,13 @@
                     if (data.phase_3_available) {
                         console.log('✅ Phase 3 features available');
                         // Replace analyze button with enhanced version
+                        console.log('🔧 Replacing button with Phase 3 enhanced version');
                         const analyzeBtn = document.getElementById('analyzeBtn');
                         if (analyzeBtn) {
-                            analyzeBtn.onclick = () => enhancedAnalyzeMatch('enhanced');
+                            analyzeBtn.onclick = () => {
+                                console.log('🚀 Enhanced analyze button clicked!');
+                                enhancedAnalyzeMatch('enhanced');
+                            };
                         }
                     } else {
                         console.log('⚠️ Phase 3 features not available, using standard analyzer');
