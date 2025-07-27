@@ -10,7 +10,7 @@ Advanced football prediction platform featuring:
 - Market-specific betting predictions
 - Team analytics and strength comparison
 """
-from flask import Flask, render_template, request, jsonify, make_response
+from flask import Flask, render_template, request, jsonify, make_response, redirect
 import os
 import json
 import sys
@@ -327,6 +327,11 @@ def index():
 
 @app.route('/test-ui')
 def test_ui():
+    """Redirect to consolidated admin dashboard"""
+    return redirect('/admin')
+
+@app.route('/test-ui-old')
+def test_ui_old():
     """Test if teams are being passed correctly"""
     teams_by_league, all_teams = demo.get_all_teams()
     
@@ -533,6 +538,11 @@ def index_v3():
 
 @app.route('/version')
 def version_check():
+    """Redirect to consolidated admin dashboard"""
+    return redirect('/admin')
+
+@app.route('/version-old')
+def version_check_old():
     """Version check endpoint"""
     return f"""
     <h1>🔢 Spooky Engine Version</h1>
@@ -549,6 +559,11 @@ def version_check():
 
 @app.route('/health')
 def health_check():
+    """Redirect to consolidated admin dashboard"""
+    return redirect('/admin')
+
+@app.route('/health-old')
+def health_check_old():
     """Simple health check endpoint"""
     # Check database tables
     db_info = ""
@@ -590,6 +605,11 @@ def health_check():
 
 @app.route('/debug-teams')
 def debug_teams():
+    """Redirect to consolidated admin dashboard"""
+    return redirect('/admin')
+
+@app.route('/debug-teams-old')
+def debug_teams_old():
     """Debug team loading"""
     debug_info = "<h1>🔍 Team Loading Debug</h1>"
     
@@ -859,6 +879,11 @@ def get_current_time():
 
 @app.route('/test-analyze')
 def test_analyze_page():
+    """Redirect to consolidated admin dashboard"""
+    return redirect('/admin')
+
+@app.route('/test-analyze-old')
+def test_analyze_page_old():
     """Simple test page for analyze functionality"""
     teams_by_league, all_teams = demo.get_all_teams()
     
@@ -1382,6 +1407,11 @@ def api_v3_system_status():
 
 @app.route('/debug')
 def debug_info():
+    """Redirect to consolidated admin dashboard"""
+    return redirect('/admin')
+
+@app.route('/debug-old')
+def debug_info_old():
     """Debug information page"""
     debug_data = {
         'environment': env_config.environment.value,
@@ -1404,6 +1434,216 @@ def debug_info():
         <pre>{json.dumps(debug_data, indent=2)}</pre>
         <hr>
         <a href="/" style="color: #00ff88;">← Back to Main App</a>
+    </body>
+    </html>
+    """
+
+@app.route('/admin')
+def admin_dashboard():
+    """Consolidated admin dashboard with all diagnostic tools"""
+    from datetime import datetime
+    import traceback
+    
+    # Get system info
+    env = get_environment().value
+    db_type = db_config.get_db_type().lower()
+    current_time = datetime.now()
+    
+    # Get team data
+    teams_by_league, all_teams = demo.get_all_teams()
+    
+    # Database stats
+    db_stats = {'teams': 0, 'competitions': 0, 'strength_records': 0}
+    try:
+        conn = demo.get_database_connection()
+        c = conn.cursor()
+        
+        c.execute("SELECT COUNT(*) FROM teams")
+        db_stats['teams'] = c.fetchone()[0]
+        
+        c.execute("SELECT COUNT(*) FROM competitions")
+        db_stats['competitions'] = c.fetchone()[0]
+        
+        c.execute("SELECT COUNT(*) FROM competition_team_strength")
+        db_stats['strength_records'] = c.fetchone()[0]
+        
+        conn.close()
+    except Exception as e:
+        db_error = str(e)
+    
+    # Phase 3 status
+    phase3_status = check_phase3_status()
+    
+    return f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Spooky Admin Dashboard</title>
+        <style>
+            body {{ background: #050510; color: white; font-family: Arial; padding: 20px; }}
+            .container {{ max-width: 1200px; margin: 0 auto; }}
+            .section {{ background: #1a1a2e; padding: 20px; margin: 20px 0; border-radius: 8px; }}
+            .grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }}
+            .stat-card {{ background: #0f3460; padding: 15px; border-radius: 5px; }}
+            button {{ background: #00ff88; color: black; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin: 5px; }}
+            button:hover {{ background: #00cc6a; }}
+            .success {{ color: #00ff88; }}
+            .warning {{ color: #ffa500; }}
+            .error {{ color: #ff4444; }}
+            select {{ padding: 10px; margin: 10px; }}
+            #result {{ background: #0f3460; padding: 15px; margin: 15px 0; border-radius: 5px; }}
+            pre {{ background: #000; padding: 10px; border-radius: 5px; overflow-x: auto; }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>🛠️ Spooky Admin Dashboard</h1>
+            <p>Generated: {current_time.strftime('%B %d, %Y at %H:%M:%S UTC')}</p>
+            
+            <!-- System Status -->
+            <div class="section">
+                <h2>📊 System Status</h2>
+                <div class="grid">
+                    <div class="stat-card">
+                        <h3>Environment</h3>
+                        <p class="{'success' if env == 'railway' else 'warning'}">{env.upper()}</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Database</h3>
+                        <p class="success">{db_type}</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Phase 3</h3>
+                        <p class="{'success' if PHASE_3_AVAILABLE else 'error'}">{'✅ Active' if PHASE_3_AVAILABLE else '❌ Inactive'}</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Deployment Version</h3>
+                        <p>2025-07-27-admin-v1</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Database Stats -->
+            <div class="section">
+                <h2>🗄️ Database Statistics</h2>
+                <div class="grid">
+                    <div class="stat-card">
+                        <h3>Teams</h3>
+                        <p class="success">{db_stats['teams']}</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Competitions</h3>
+                        <p class="success">{db_stats['competitions']}</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Strength Records</h3>
+                        <p class="success">{db_stats['strength_records']}</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Phase 3 Tables</h3>
+                        <p class="{'success' if phase3_status['tables_exist'] else 'warning'}">
+                            {phase3_status['existing_tables']}/{phase3_status['required_tables']} tables
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Team Data -->
+            <div class="section">
+                <h2>👥 Team Data</h2>
+                <p>Total Teams Loaded: <strong>{len(all_teams)}</strong></p>
+                <div class="grid">
+                    {''.join(f'<div class="stat-card"><h4>{league}</h4><p>{len(teams)} teams</p></div>' for league, teams in teams_by_league.items())}
+                </div>
+            </div>
+            
+            <!-- Test Analyze Function -->
+            <div class="section">
+                <h2>🧪 Test Analyze Function</h2>
+                <div>
+                    <select id="homeTeam">
+                        <option value="">Select Home Team</option>
+                        {''.join(f'<option value="{team}">{team}</option>' for team in sorted(all_teams))}
+                    </select>
+                    <select id="awayTeam">
+                        <option value="">Select Away Team</option>
+                        {''.join(f'<option value="{team}">{team}</option>' for team in sorted(all_teams))}
+                    </select>
+                    <button onclick="testAnalyze()">Test Analyze</button>
+                </div>
+                <div id="analyzeResult"></div>
+            </div>
+            
+            <!-- API Endpoints Test -->
+            <div class="section">
+                <h2>🔌 API Endpoints</h2>
+                <button onclick="testEndpoint('/api/teams')">Test Teams API</button>
+                <button onclick="testEndpoint('/api/last-update')">Test Last Update</button>
+                <button onclick="testEndpoint('/api/current-time')">Test Current Time</button>
+                <button onclick="testEndpoint('/api/v3/system-status')">Test Phase 3 Status</button>
+                <div id="apiResult"></div>
+            </div>
+            
+            <!-- Phase 3 Migration -->
+            {'<div class="section"><h2>🚀 Phase 3 Migration</h2><p class="warning">⚠️ Phase 3 tables not created yet</p><p>To create Phase 3 tables, set environment variable: <code>RUN_PHASE3_MIGRATION=true</code></p></div>' if not phase3_status['tables_exist'] else ''}
+            
+            <div style="margin-top: 40px;">
+                <a href="/" style="color: #00ff88;">← Back to Main App</a>
+            </div>
+        </div>
+        
+        <script>
+        function testAnalyze() {{
+            const home = document.getElementById('homeTeam').value;
+            const away = document.getElementById('awayTeam').value;
+            const resultDiv = document.getElementById('analyzeResult');
+            
+            if (!home || !away) {{
+                resultDiv.innerHTML = '<p class="error">Please select both teams</p>';
+                return;
+            }}
+            
+            resultDiv.innerHTML = '<p>⏳ Analyzing...</p>';
+            
+            fetch('/analyze', {{
+                method: 'POST',
+                headers: {{ 'Content-Type': 'application/json' }},
+                body: JSON.stringify({{ home_team: home, away_team: away }})
+            }})
+            .then(response => response.json())
+            .then(data => {{
+                if (data.error) {{
+                    resultDiv.innerHTML = `<p class="error">❌ ${{data.error}}</p>`;
+                }} else {{
+                    resultDiv.innerHTML = `
+                        <div id="result">
+                            <h3>✅ Analysis Complete</h3>
+                            <p><strong>${{data.home_team.name}}</strong> (${{data.home_probability.toFixed(1)}}%) vs <strong>${{data.away_team.name}}</strong> (${{data.away_probability.toFixed(1)}}%)</p>
+                            <p>Favorite: <strong>${{data.favorite}}</strong></p>
+                            <p>Type: ${{data.score_type}} - ${{data.explanation}}</p>
+                        </div>
+                    `;
+                }}
+            }})
+            .catch(error => {{
+                resultDiv.innerHTML = `<p class="error">❌ Network Error: ${{error.message}}</p>`;
+            }});
+        }}
+        
+        function testEndpoint(url) {{
+            const resultDiv = document.getElementById('apiResult');
+            resultDiv.innerHTML = `<p>⏳ Testing ${{url}}...</p>`;
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {{
+                    resultDiv.innerHTML = `<div id="result"><h4>✅ ${{url}}</h4><pre>${{JSON.stringify(data, null, 2)}}</pre></div>`;
+                }})
+                .catch(error => {{
+                    resultDiv.innerHTML = `<p class="error">❌ Error testing ${{url}}: ${{error.message}}</p>`;
+                }});
+        }}
+        </script>
     </body>
     </html>
     """
