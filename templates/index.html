@@ -11,7 +11,6 @@
     
     <!-- Include All CSS Components -->
     {% include 'components/web3_design_system.html' %}
-    {% include 'components/enhanced_team_selection_css.html' %}
     {% include 'components/match_results_css.html' %}
     {% include 'components/enhanced_match_results_css.html' %}
 </head>
@@ -23,20 +22,22 @@
             <p class="header-subtitle" style="color: var(--text-secondary);">Professional Betting Odds Platform</p>
         </header>
         
-        <!-- Enhanced Team Selection Component -->
-        {% include 'components/enhanced_team_selection.html' %}
+        <!-- Simple Team Selection Component -->
+        {% include 'components/simple_team_selection.html' %}
         
-        <!-- Enhanced Match Results Component -->
-        {% include 'components/enhanced_match_results.html' %}
-        
-        <!-- Web3 Betting Odds Component -->
-        {% include 'components/web3_betting_odds.html' %}
+        <!-- Results Section (Initially Hidden) -->
+        <div id="resultsContainer" style="display: none;">
+            <!-- Enhanced Match Results Component -->
+            {% include 'components/enhanced_match_results.html' %}
+            
+            <!-- Web3 Betting Odds Component - Below Analysis -->
+            {% include 'components/web3_betting_odds.html' %}
+        </div>
     </div>
     
     <!-- Include All JavaScript Components -->
+    {% include 'components/simple_team_selection_js.html' %}
     {% include 'components/web3_betting_odds_js.html' %}
-    {% include 'components/enhanced_team_selection_js.html' %}
-    {% include 'components/enhanced_match_results_js.html' %}
-    {% include 'components/main_javascript.html' %}
+    {% include 'components/main_javascript_clean.html' %}
 </body>
 </html>

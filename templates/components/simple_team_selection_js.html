@@ -1,0 +1,182 @@
+<!-- Simple Team Selection JavaScript -->
+<script>
+// Team data structure
+const allTeams = {
+    'Premier League': [
+        'Arsenal', 'Aston Villa', 'Bournemouth', 'Brentford', 'Brighton & Hove Albion',
+        'Burnley', 'Chelsea', 'Crystal Palace', 'Everton', 'Fulham',
+        'Liverpool', 'Luton Town', 'Manchester City', 'Manchester United', 'Newcastle United',
+        'Nottingham Forest', 'Sheffield United', 'Tottenham Hotspur', 'West Ham United', 'Wolverhampton Wanderers'
+    ],
+    'La Liga': [
+        'Almería', 'Athletic Club', 'Atletico Madrid', 'Barcelona', 'Cadiz',
+        'Celta Vigo', 'Getafe', 'Girona', 'Granada CF', 'Las Palmas',
+        'Mallorca', 'Osasuna', 'Rayo Vallecano', 'Real Betis', 'Real Madrid',
+        'Real Sociedad', 'Sevilla', 'Valencia', 'Villarreal', 'Alaves'
+    ],
+    'Serie A': [
+        'AC Milan', 'AS Roma', 'Atalanta', 'Bologna', 'Cagliari',
+        'Empoli', 'Fiorentina', 'Frosinone', 'Genoa', 'Hellas Verona',
+        'Inter', 'Juventus', 'Lazio', 'Lecce', 'Monza',
+        'Napoli', 'Salernitana', 'Sassuolo', 'Torino', 'Udinese'
+    ],
+    'Bundesliga': [
+        '1. FC Heidenheim 1846', '1. FC Köln', '1. FC Union Berlin', 'Bayer Leverkusen', 'Bayern München',
+        'Borussia Dortmund', 'Borussia Mönchengladbach', 'Darmstadt 98', 'Eintracht Frankfurt', 'FC Augsburg',
+        'RB Leipzig', 'SC Freiburg', 'SV Werder Bremen', 'TSG Hoffenheim', 'VfB Stuttgart',
+        'VfL Bochum 1848', 'VfL Wolfsburg', 'Mainz 05'
+    ],
+    'Ligue 1': [
+        'Brest', 'Clermont', 'Le Havre', 'Lens', 'Lille',
+        'Lorient', 'Lyon', 'Marseille', 'Metz', 'Monaco',
+        'Montpellier', 'Nantes', 'Nice', 'Paris Saint Germain', 'Reims',
+        'Rennes', 'Strasbourg', 'Toulouse'
+    ],
+    'International': [
+        'Argentina', 'Belgium', 'Brazil', 'Croatia', 'Denmark',
+        'England', 'France', 'Germany', 'Italy', 'Mexico',
+        'Morocco', 'Netherlands', 'Nigeria', 'Poland', 'Portugal',
+        'Senegal', 'Serbia', 'South Korea', 'Spain', 'Switzerland',
+        'Uruguay', 'USA', 'Wales'
+    ]
+};
+
+// Initialize team dropdowns
+function initializeTeamSelects() {
+    const homeSelect = document.getElementById('homeTeam');
+    const awaySelect = document.getElementById('awayTeam');
+    
+    if (!homeSelect || !awaySelect) return;
+    
+    // Clear existing options
+    homeSelect.innerHTML = '<option value="">Select home team...</option>';
+    awaySelect.innerHTML = '<option value="">Select away team...</option>';
+    
+    // Add teams by league
+    Object.keys(allTeams).forEach(league => {
+        const optgroup = document.createElement('optgroup');
+        optgroup.label = league;
+        
+        const optgroup2 = document.createElement('optgroup');
+        optgroup2.label = league;
+        
+        allTeams[league].forEach(team => {
+            const option1 = new Option(team, team);
+            const option2 = new Option(team, team);
+            optgroup.appendChild(option1);
+            optgroup2.appendChild(option2);
+        });
+        
+        homeSelect.appendChild(optgroup);
+        awaySelect.appendChild(optgroup2);
+    });
+}
+
+// Update button state
+function updateButton() {
+    const homeTeam = document.getElementById('homeTeam').value;
+    const awayTeam = document.getElementById('awayTeam').value;
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    const btnText = analyzeBtn.querySelector('.btn-text');
+    
+    if (homeTeam && awayTeam && homeTeam !== awayTeam) {
+        analyzeBtn.disabled = false;
+        btnText.textContent = 'ANALYZE MATCH';
+    } else {
+        analyzeBtn.disabled = true;
+        btnText.textContent = homeTeam && awayTeam && homeTeam === awayTeam ? 
+            'Select different teams' : 'Select both teams';
+    }
+}
+
+// Swap teams
+function swapTeams() {
+    const homeSelect = document.getElementById('homeTeam');
+    const awaySelect = document.getElementById('awayTeam');
+    
+    const temp = homeSelect.value;
+    homeSelect.value = awaySelect.value;
+    awaySelect.value = temp;
+    
+    updateButton();
+}
+
+// Analyze match
+async function analyzeMatch() {
+    const homeTeam = document.getElementById('homeTeam').value;
+    const awayTeam = document.getElementById('awayTeam').value;
+    
+    if (!homeTeam || !awayTeam) return;
+    
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    const btnText = analyzeBtn.querySelector('.btn-text');
+    const btnIcon = analyzeBtn.querySelector('.btn-icon');
+    
+    // Show loading state
+    analyzeBtn.disabled = true;
+    btnText.textContent = 'Analyzing...';
+    btnIcon.textContent = '⚡';
+    btnIcon.style.animation = 'spin 1s linear infinite';
+    
+    try {
+        const response = await fetch('/analyze', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                home_team: homeTeam,
+                away_team: awayTeam
+            })
+        });
+        
+        const data = await response.json();
+        
+        // Display results
+        displayResults(data);
+        
+        // Show results container with smooth animation
+        const resultsContainer = document.getElementById('resultsContainer');
+        resultsContainer.style.display = 'block';
+        resultsContainer.style.opacity = '0';
+        resultsContainer.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            resultsContainer.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+            resultsContainer.style.opacity = '1';
+            resultsContainer.style.transform = 'translateY(0)';
+        }, 100);
+        
+        // Smooth scroll to results
+        setTimeout(() => {
+            resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 200);
+        
+    } catch (error) {
+        console.error('Error analyzing match:', error);
+        alert('Error analyzing match. Please try again.');
+    } finally {
+        // Reset button
+        analyzeBtn.disabled = false;
+        btnText.textContent = 'ANALYZE MATCH';
+        btnIcon.textContent = '⚡';
+        btnIcon.style.animation = '';
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    initializeTeamSelects();
+    console.log('Simple team selection initialized');
+});
+
+// Add spin animation
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+`;
+document.head.appendChild(style);
+</script>

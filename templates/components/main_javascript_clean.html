@@ -1,0 +1,146 @@
+<!-- Clean Main JavaScript Component -->
+<script>
+// Display full results with proper hierarchy
+function displayResults(data) {
+    // Update match analysis first
+    updateMatchAnalysis(data);
+    
+    // Show results container
+    document.getElementById('resultContent').style.display = 'block';
+    
+    // Display betting odds after a short delay for visual flow
+    setTimeout(() => {
+        if (data.betting_odds) {
+            displayBettingOdds(data.betting_odds, data.home_team.name, data.away_team.name);
+        }
+    }, 300);
+}
+
+// Update match analysis section
+function updateMatchAnalysis(data) {
+    // Match header
+    document.getElementById('matchType').textContent = data.score_type || 'Match Analysis';
+    document.getElementById('matchTitle').textContent = `${data.home_team.name} vs ${data.away_team.name}`;
+    
+    // Home team details
+    document.getElementById('homeName').textContent = data.home_team.name;
+    document.getElementById('homeLeague').textContent = data.home_team.league;
+    document.getElementById('homeStrength').textContent = Math.round(data.home_strength);
+    document.getElementById('homeWin').textContent = data.home_probability + '%';
+    
+    // Update home strength bar
+    const homeBar = document.getElementById('homeStrengthBar');
+    homeBar.style.width = data.home_strength + '%';
+    
+    // Away team details
+    document.getElementById('awayName').textContent = data.away_team.name;
+    document.getElementById('awayLeague').textContent = data.away_team.league;
+    document.getElementById('awayStrength').textContent = Math.round(data.away_strength);
+    document.getElementById('awayWin').textContent = data.away_probability + '%';
+    
+    // Update away strength bar
+    const awayBar = document.getElementById('awayStrengthBar');
+    awayBar.style.width = data.away_strength + '%';
+    
+    // Expected goals
+    if (data.expected_goals) {
+        document.getElementById('expectedGoals').textContent = data.expected_goals.toFixed(1);
+    }
+    
+    // Main prediction
+    updatePrediction(data);
+    
+    // Confidence indicators
+    updateConfidenceIndicators(data);
+    
+    // Parameter breakdown
+    if (data.home_parameters && data.away_parameters) {
+        updateParameterBreakdown(data.home_parameters, data.away_parameters);
+    }
+    
+    // H2H if available
+    if (data.h2h_data) {
+        updateH2HHistory(data.h2h_data);
+    }
+    
+    // Team form if available
+    if (data.home_form || data.away_form) {
+        updateTeamForm(data.home_form, data.away_form);
+    }
+}
+
+// Update main prediction
+function updatePrediction(data) {
+    const predictionElement = document.getElementById('predictionResult');
+    const confidenceElement = document.getElementById('confidencePercentage');
+    
+    if (predictionElement) {
+        predictionElement.textContent = data.favorite + ' to win';
+        
+        // Add confidence class based on probability difference
+        const probDiff = Math.abs(data.home_probability - data.away_probability);
+        if (probDiff > 20) {
+            predictionElement.className = 'prediction-text high-confidence';
+        } else if (probDiff > 10) {
+            predictionElement.className = 'prediction-text medium-confidence';
+        } else {
+            predictionElement.className = 'prediction-text low-confidence';
+        }
+    }
+    
+    if (confidenceElement) {
+        const confidence = calculateConfidence(data);
+        confidenceElement.textContent = confidence + '%';
+    }
+}
+
+// Calculate confidence based on probability difference
+function calculateConfidence(data) {
+    const probDiff = Math.abs(data.home_probability - data.away_probability);
+    return Math.min(95, 50 + probDiff);
+}
+
+// Update confidence indicators
+function updateConfidenceIndicators(data) {
+    const indicators = {
+        'strengthDiff': Math.abs(data.home_strength - data.away_strength),
+        'probDiff': Math.abs(data.home_probability - data.away_probability),
+        'favorite': data.favorite === data.home_team.name ? 'home' : 'away'
+    };
+    
+    // Visual confidence indicators
+    const confidenceBar = document.querySelector('.confidence-bar-fill');
+    if (confidenceBar) {
+        const confidence = calculateConfidence(data);
+        confidenceBar.style.width = confidence + '%';
+    }
+}
+
+// Update parameter breakdown
+function updateParameterBreakdown(homeParams, awayParams) {
+    // This function would update the parameter comparison chart
+    console.log('Updating parameters:', homeParams, awayParams);
+}
+
+// Update H2H history
+function updateH2HHistory(h2hData) {
+    // This function would update the H2H section if available
+    console.log('H2H data:', h2hData);
+}
+
+// Update team form
+function updateTeamForm(homeForm, awayForm) {
+    // This function would update the team form displays
+    console.log('Team form:', homeForm, awayForm);
+}
+
+// Initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Clean main JavaScript initialized');
+    
+    // Set up Web3 background
+    if (typeof initializeWeb3Background === 'function') {
+        initializeWeb3Background();
+    }
+});
+</script>
