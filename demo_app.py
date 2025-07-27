@@ -639,12 +639,19 @@ def analyze_match():
         home_team = data.get('home_team')
         away_team = data.get('away_team')
         
+        # Handle both string and object formats
+        if isinstance(home_team, dict):
+            home_team = home_team.get('name', home_team)
+        if isinstance(away_team, dict):
+            away_team = away_team.get('name', away_team)
+        
         if not home_team or not away_team:
             return jsonify({'error': 'Please select both teams'})
         
         if home_team == away_team:
             return jsonify({'error': 'Please select different teams'})
         
+        print(f"Analyzing: {home_team} vs {away_team}")
         result = demo.analyze_match(home_team, away_team)
         return jsonify(result)
         
