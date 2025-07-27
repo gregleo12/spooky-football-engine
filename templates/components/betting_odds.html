@@ -1,0 +1,67 @@
+<!-- Betting Odds Display Component -->
+<div class="betting-odds-container" id="bettingOddsContainer" style="display: none;">
+    <!-- Match Outcome Odds -->
+    <div class="odds-section">
+        <h3 class="odds-section-title">
+            <span class="odds-icon">🎯</span>
+            Match Outcome Odds
+        </h3>
+        <div class="odds-grid">
+            <div class="odds-item">
+                <p class="odds-team" id="homeOddsTeam">Home</p>
+                <p class="odds-value" id="homeOdds">-</p>
+                <p class="odds-probability" id="homeOddsProb">-</p>
+            </div>
+            <div class="odds-item">
+                <p class="odds-team">Draw</p>
+                <p class="odds-value" id="drawOdds">-</p>
+                <p class="odds-probability" id="drawOddsProb">-</p>
+            </div>
+            <div class="odds-item">
+                <p class="odds-team" id="awayOddsTeam">Away</p>
+                <p class="odds-value" id="awayOdds">-</p>
+                <p class="odds-probability" id="awayOddsProb">-</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Goals Market -->
+    <div class="odds-section">
+        <h3 class="odds-section-title">
+            <span class="odds-icon">⚽</span>
+            Over/Under 2.5 Goals
+        </h3>
+        <div class="odds-grid two-column">
+            <div class="odds-item">
+                <p class="odds-team">Over 2.5</p>
+                <p class="odds-value" id="over25Odds">-</p>
+                <p class="odds-probability" id="over25Prob">-</p>
+            </div>
+            <div class="odds-item">
+                <p class="odds-team">Under 2.5</p>
+                <p class="odds-value" id="under25Odds">-</p>
+                <p class="odds-probability" id="under25Prob">-</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Both Teams to Score -->
+    <div class="odds-section">
+        <h3 class="odds-section-title">
+            <span class="odds-icon">🥅</span>
+            Both Teams to Score
+        </h3>
+        <div class="odds-grid two-column">
+            <div class="odds-item">
+                <p class="odds-team">Yes</p>
+                <p class="odds-value" id="bttsYesOdds">-</p>
+                <p class="odds-probability" id="bttsYesProb">-</p>
+            </div>
+            <div class="odds-item">
+                <p class="odds-team">No</p>
+                <p class="odds-value" id="bttsNoOdds">-</p>
+                <p class="odds-probability" id="bttsNoProb">-</p>
+            </div>
+        </div>
+    </div>
+</div>

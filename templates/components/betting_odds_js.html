@@ -1,0 +1,54 @@
+<!-- Betting Odds JavaScript -->
+<script>
+function displayBettingOdds(bettingOdds, homeTeam, awayTeam) {
+    // Update team names in odds display
+    document.getElementById('homeOddsTeam').textContent = homeTeam;
+    document.getElementById('awayOddsTeam').textContent = awayTeam;
+    
+    // Match Outcome Odds
+    if (bettingOdds.match_outcome) {
+        const matchOdds = bettingOdds.match_outcome;
+        
+        // Home Win
+        document.getElementById('homeOdds').textContent = matchOdds.home_win.odds;
+        document.getElementById('homeOddsProb').textContent = matchOdds.home_win.probability + '%';
+        
+        // Draw
+        document.getElementById('drawOdds').textContent = matchOdds.draw.odds;
+        document.getElementById('drawOddsProb').textContent = matchOdds.draw.probability + '%';
+        
+        // Away Win
+        document.getElementById('awayOdds').textContent = matchOdds.away_win.odds;
+        document.getElementById('awayOddsProb').textContent = matchOdds.away_win.probability + '%';
+    }
+    
+    // Goals Market
+    if (bettingOdds.goals_market) {
+        const goalsOdds = bettingOdds.goals_market;
+        
+        // Over 2.5
+        document.getElementById('over25Odds').textContent = goalsOdds.over_2_5.odds;
+        document.getElementById('over25Prob').textContent = goalsOdds.over_2_5.probability + '%';
+        
+        // Under 2.5
+        document.getElementById('under25Odds').textContent = goalsOdds.under_2_5.odds;
+        document.getElementById('under25Prob').textContent = goalsOdds.under_2_5.probability + '%';
+    }
+    
+    // BTTS Market
+    if (bettingOdds.btts_market) {
+        const bttsOdds = bettingOdds.btts_market;
+        
+        // BTTS Yes
+        document.getElementById('bttsYesOdds').textContent = bttsOdds.yes.odds;
+        document.getElementById('bttsYesProb').textContent = bttsOdds.yes.probability + '%';
+        
+        // BTTS No
+        document.getElementById('bttsNoOdds').textContent = bttsOdds.no.odds;
+        document.getElementById('bttsNoProb').textContent = bttsOdds.no.probability + '%';
+    }
+    
+    // Show the betting odds container
+    document.getElementById('bettingOddsContainer').style.display = 'block';
+}
+</script>
