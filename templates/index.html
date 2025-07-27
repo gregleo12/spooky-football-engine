@@ -11,7 +11,9 @@
     
     <!-- Include All CSS Components -->
     {% include 'components/core_styles.html' %}
+    {% include 'components/enhanced_team_selection_css.html' %}
     {% include 'components/match_results_css.html' %}
+    {% include 'components/enhanced_match_results_css.html' %}
     {% include 'components/betting_odds_css.html' %}
 </head>
 <body>
@@ -22,15 +24,17 @@
             <p class="header-subtitle">Advanced football analytics & predictions</p>
         </header>
         
-        <!-- Team Selection Component -->
-        {% include 'components/team_selection.html' %}
+        <!-- Enhanced Team Selection Component -->
+        {% include 'components/enhanced_team_selection.html' %}
         
-        <!-- Match Results Component -->
-        {% include 'components/match_results.html' %}
+        <!-- Enhanced Match Results Component -->
+        {% include 'components/enhanced_match_results.html' %}
     </div>
     
     <!-- Include All JavaScript Components -->
     {% include 'components/betting_odds_js.html' %}
+    {% include 'components/enhanced_team_selection_js.html' %}
+    {% include 'components/enhanced_match_results_js.html' %}
     {% include 'components/main_javascript.html' %}
 </body>
 </html>

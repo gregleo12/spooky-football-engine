@@ -1,0 +1,221 @@
+<!-- Enhanced Match Results Display Component -->
+<div class="results-section" id="resultContent" style="display: none;">
+    <div class="results-header">
+        <div class="match-badge" id="matchType">Same League</div>
+        <h3 class="match-title" id="matchTitle">Team vs Team</h3>
+        <p class="match-subtitle">Comprehensive Analysis</p>
+    </div>
+    
+    <!-- Enhanced Score Display -->
+    <div class="score-display">
+        <div class="team-result">
+            <div class="team-badge" id="homeResultBadge">🏠</div>
+            <div class="team-info">
+                <h4 id="homeName">Home Team</h4>
+                <p id="homeLeague">League</p>
+                <div class="strength-container">
+                    <div class="strength-score" id="homeStrength">85</div>
+                    <div class="strength-bar">
+                        <div class="strength-fill" id="homeStrengthBar" style="width: 85%"></div>
+                    </div>
+                </div>
+                <div class="win-probability">
+                    <span class="prob-value" id="homeWin">45%</span>
+                    <span class="prob-label">Win Chance</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="vs-divider">
+            <span class="vs-text">VS</span>
+            <div class="match-stats">
+                <div class="stat-item">
+                    <span class="stat-value" id="expectedGoals">2.5</span>
+                    <span class="stat-label">Expected Goals</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="team-result">
+            <div class="team-badge" id="awayResultBadge">✈️</div>
+            <div class="team-info">
+                <h4 id="awayName">Away Team</h4>
+                <p id="awayLeague">League</p>
+                <div class="strength-container">
+                    <div class="strength-score" id="awayStrength">78</div>
+                    <div class="strength-bar">
+                        <div class="strength-fill" id="awayStrengthBar" style="width: 78%"></div>
+                    </div>
+                </div>
+                <div class="win-probability">
+                    <span class="prob-value" id="awayWin">35%</span>
+                    <span class="prob-label">Win Chance</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Predicted Score Section -->
+    <div class="predicted-score">
+        <h4 class="section-title">
+            <span class="section-icon">🎯</span>
+            Most Likely Result
+        </h4>
+        <div class="score-prediction">
+            <div class="predicted-result" id="predictedScore">2 - 1</div>
+            <div class="score-confidence" id="scoreConfidence">
+                <div class="confidence-bar">
+                    <div class="confidence-fill" style="width: 75%"></div>
+                </div>
+                <span class="confidence-text">75% Confidence</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Enhanced Prediction Section -->
+    <div class="prediction">
+        <div class="prediction-header">
+            <h4 class="section-title">
+                <span class="section-icon">🔮</span>
+                Match Prediction
+            </h4>
+            <button class="toggle-details" onclick="toggleDetails()" id="detailsToggle">
+                <span>Show Details</span>
+                <span class="toggle-icon">▼</span>
+            </button>
+        </div>
+        
+        <div class="prediction-main">
+            <p class="prediction-result" id="predictionResult">Team to win</p>
+            <div class="prediction-confidence-container">
+                <div class="prediction-confidence" id="confidence">Medium Confidence</div>
+                <div class="confidence-indicator" id="confidenceIndicator">
+                    <div class="confidence-dots">
+                        <div class="dot active"></div>
+                        <div class="dot active"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                    </div>
+                </div>
+            </div>
+            <p class="prediction-details" id="predictionDetails">Analysis details...</p>
+        </div>
+        
+        <!-- Parameter Breakdown (Hidden by default) -->
+        <div class="parameter-breakdown" id="parameterBreakdown" style="display: none;">
+            <h5>Analysis Breakdown</h5>
+            <div class="parameter-grid">
+                <div class="parameter-item">
+                    <div class="param-header">
+                        <span class="param-name">Team Strength</span>
+                        <span class="param-weight">40%</span>
+                    </div>
+                    <div class="param-bars">
+                        <div class="param-bar home">
+                            <div class="param-fill" style="width: 85%"></div>
+                        </div>
+                        <div class="param-bar away">
+                            <div class="param-fill" style="width: 78%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="parameter-item">
+                    <div class="param-header">
+                        <span class="param-name">Recent Form</span>
+                        <span class="param-weight">25%</span>
+                    </div>
+                    <div class="param-bars">
+                        <div class="param-bar home">
+                            <div class="param-fill" style="width: 72%"></div>
+                        </div>
+                        <div class="param-bar away">
+                            <div class="param-fill" style="width: 68%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="parameter-item">
+                    <div class="param-header">
+                        <span class="param-name">Home Advantage</span>
+                        <span class="param-weight">15%</span>
+                    </div>
+                    <div class="param-bars">
+                        <div class="param-bar home">
+                            <div class="param-fill" style="width: 90%"></div>
+                        </div>
+                        <div class="param-bar away">
+                            <div class="param-fill" style="width: 10%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="parameter-item">
+                    <div class="param-header">
+                        <span class="param-name">Head-to-Head</span>
+                        <span class="param-weight">20%</span>
+                    </div>
+                    <div class="param-bars">
+                        <div class="param-bar home">
+                            <div class="param-fill" style="width: 65%"></div>
+                        </div>
+                        <div class="param-bar away">
+                            <div class="param-fill" style="width: 58%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Betting Odds Section -->
+    {% include 'components/betting_odds.html' %}
+    
+    <!-- Additional Insights -->
+    <div class="additional-insights" id="additionalInsights" style="display: none;">
+        <h4 class="section-title">
+            <span class="section-icon">💡</span>
+            Key Insights
+        </h4>
+        <div class="insights-grid">
+            <div class="insight-card">
+                <div class="insight-icon">⚽</div>
+                <div class="insight-content">
+                    <div class="insight-title">Goal Expectation</div>
+                    <div class="insight-text" id="goalInsight">Both teams likely to score</div>
+                </div>
+            </div>
+            <div class="insight-card">
+                <div class="insight-icon">🏆</div>
+                <div class="insight-content">
+                    <div class="insight-title">Match Importance</div>
+                    <div class="insight-text" id="importanceInsight">High stakes encounter</div>
+                </div>
+            </div>
+            <div class="insight-card">
+                <div class="insight-icon">📊</div>
+                <div class="insight-content">
+                    <div class="insight-title">Historical Trend</div>
+                    <div class="insight-text" id="trendInsight">Close matches expected</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Save/Share Actions -->
+    <div class="result-actions">
+        <button class="action-btn save-btn" onclick="saveMatchup()" id="saveBtn">
+            <span class="btn-icon">💾</span>
+            <span>Save Analysis</span>
+        </button>
+        <button class="action-btn share-btn" onclick="shareMatchup()">
+            <span class="btn-icon">🔗</span>
+            <span>Share Result</span>
+        </button>
+        <button class="action-btn export-btn" onclick="exportAnalysis()">
+            <span class="btn-icon">📄</span>
+            <span>Export</span>
+        </button>
+    </div>
+</div>

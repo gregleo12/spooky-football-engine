@@ -1,0 +1,118 @@
+<!-- Enhanced Team Selection Component with Search -->
+<div class="match-setup-card">
+    <h2 class="card-title">
+        <div class="card-title-icon">🎯</div>
+        <span>Select Match</span>
+    </h2>
+    
+    <!-- Quick Matchups -->
+    <div class="quick-matchups">
+        <label>Popular Matchups:</label>
+        <div class="quick-buttons">
+            <button class="quick-btn" onclick="setQuickMatchup('Liverpool', 'Manchester City')">
+                Liverpool vs Man City
+            </button>
+            <button class="quick-btn" onclick="setQuickMatchup('Real Madrid', 'Barcelona')">
+                El Clasico
+            </button>
+            <button class="quick-btn" onclick="setQuickMatchup('Arsenal', 'Chelsea')">
+                London Derby
+            </button>
+            <button class="quick-btn" onclick="setQuickMatchup('Inter', 'AC Milan')">
+                Milan Derby
+            </button>
+        </div>
+    </div>
+    
+    <!-- Tab Navigation -->
+    <div class="tab-navigation">
+        <button class="tab-btn active" id="clubsTab" onclick="switchTab('clubs')">
+            <span class="tab-icon">⚽</span>
+            Clubs
+        </button>
+        <button class="tab-btn" id="countriesTab" onclick="switchTab('countries')">
+            <span class="tab-icon">🏆</span>
+            Countries
+        </button>
+    </div>
+    
+    <!-- Enhanced Team Selection Grid -->
+    <div class="team-selection-grid">
+        <!-- Home Team Selection -->
+        <div class="team-selector">
+            <label for="homeTeamSearch">Home Team</label>
+            <div class="search-container">
+                <input type="text" 
+                       id="homeTeamSearch" 
+                       class="team-search-input"
+                       placeholder="Search teams..."
+                       onkeyup="filterTeams('home')"
+                       onfocus="showDropdown('home')"
+                       autocomplete="off">
+                <div class="search-dropdown" id="homeDropdown">
+                    <div class="dropdown-content" id="homeDropdownContent">
+                        <!-- Dynamic team options will be populated here -->
+                    </div>
+                </div>
+            </div>
+            <input type="hidden" id="homeTeam" onchange="updateButton()">
+        </div>
+        
+        <!-- VS Section with Swap -->
+        <div class="vs-section">
+            <button class="swap-button" onclick="swapTeams()" title="Swap teams">⇄</button>
+            <span class="vs-text">VS</span>
+            <div class="random-button">
+                <button class="random-btn" onclick="randomMatchup()" title="Random matchup">🎲</button>
+            </div>
+        </div>
+        
+        <!-- Away Team Selection -->
+        <div class="team-selector">
+            <label for="awayTeamSearch">Away Team</label>
+            <div class="search-container">
+                <input type="text" 
+                       id="awayTeamSearch" 
+                       class="team-search-input"
+                       placeholder="Search teams..."
+                       onkeyup="filterTeams('away')"
+                       onfocus="showDropdown('away')"
+                       autocomplete="off">
+                <div class="search-dropdown" id="awayDropdown">
+                    <div class="dropdown-content" id="awayDropdownContent">
+                        <!-- Dynamic team options will be populated here -->
+                    </div>
+                </div>
+            </div>
+            <input type="hidden" id="awayTeam" onchange="updateButton()">
+        </div>
+    </div>
+    
+    <!-- Recent Selections -->
+    <div class="recent-selections" id="recentSelections" style="display: none;">
+        <label>Recent Matchups:</label>
+        <div class="recent-buttons" id="recentButtons">
+            <!-- Recent matchups will be populated here -->
+        </div>
+    </div>
+    
+    <!-- Analyze Button with Enhanced States -->
+    <button class="analyze-btn" id="analyzeBtn" onclick="analyzeMatch()" disabled>
+        <span class="btn-icon" id="btnIcon">🔍</span>
+        <span class="btn-text" id="btnText">Select teams to analyze</span>
+        <div class="btn-loading" id="btnLoading" style="display: none;">
+            <div class="loading-spinner"></div>
+        </div>
+    </button>
+    
+    <!-- Match Preview -->
+    <div class="match-preview" id="matchPreview" style="display: none;">
+        <div class="preview-header">
+            <span class="preview-icon">⚡</span>
+            <span class="preview-text">Match Preview</span>
+        </div>
+        <div class="preview-content" id="previewContent">
+            <!-- Preview content will be populated here -->
+        </div>
+    </div>
+</div>

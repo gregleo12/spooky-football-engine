@@ -1,0 +1,329 @@
+<!-- Enhanced Team Selection CSS -->
+<style>
+/* Quick Matchups */
+.quick-matchups {
+    margin-bottom: 24px;
+    padding: 16px;
+    background: var(--bg-hover);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+}
+
+.quick-matchups label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+}
+
+.quick-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.quick-btn {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 8px 16px;
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.quick-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(0, 255, 136, 0.05);
+}
+
+/* Enhanced Search Container */
+.search-container {
+    position: relative;
+}
+
+.team-search-input {
+    width: 100%;
+    background: var(--bg-hover);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    color: var(--text-primary);
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.team-search-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: var(--bg-secondary);
+}
+
+.team-search-input.has-selection {
+    border-color: var(--accent);
+    background: rgba(0, 255, 136, 0.05);
+}
+
+/* Search Dropdown */
+.search-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 1000;
+    display: none;
+    margin-top: 4px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.search-dropdown.show {
+    display: block;
+}
+
+.dropdown-content {
+    padding: 8px 0;
+}
+
+.team-option {
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.team-option:last-child {
+    border-bottom: none;
+}
+
+.team-option:hover {
+    background: var(--bg-hover);
+    color: var(--accent);
+}
+
+.team-option.selected {
+    background: rgba(0, 255, 136, 0.1);
+    color: var(--accent);
+}
+
+.team-flag {
+    width: 20px;
+    height: 15px;
+    background: var(--bg-hover);
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+}
+
+.team-info {
+    flex: 1;
+}
+
+.team-name {
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.team-league {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 2px;
+}
+
+/* Enhanced VS Section */
+.vs-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 0 16px;
+}
+
+.random-button {
+    margin-top: 8px;
+}
+
+.random-btn {
+    background: var(--bg-hover);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    width: 32px;
+    height: 32px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+}
+
+.random-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: rotate(180deg);
+}
+
+/* Recent Selections */
+.recent-selections {
+    margin-bottom: 24px;
+    padding: 16px;
+    background: var(--bg-hover);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+}
+
+.recent-selections label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+}
+
+.recent-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.recent-btn {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 6px 12px;
+    color: var(--text-secondary);
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.recent-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+/* Enhanced Analyze Button */
+.analyze-btn {
+    position: relative;
+    width: 100%;
+    background: var(--accent);
+    border: none;
+    border-radius: 12px;
+    padding: 16px;
+    color: var(--bg-primary);
+    font-weight: 700;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    overflow: hidden;
+}
+
+.analyze-btn:disabled {
+    background: var(--bg-hover);
+    color: var(--text-secondary);
+    cursor: not-allowed;
+}
+
+.analyze-btn:not(:disabled):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 255, 136, 0.3);
+}
+
+.analyze-btn.loading {
+    pointer-events: none;
+}
+
+.btn-loading {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--accent);
+}
+
+.loading-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--bg-primary);
+    border-top: 2px solid transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Match Preview */
+.match-preview {
+    margin-top: 20px;
+    padding: 16px;
+    background: rgba(0, 255, 136, 0.05);
+    border: 1px solid rgba(0, 255, 136, 0.2);
+    border-radius: 12px;
+}
+
+.preview-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    font-weight: 600;
+    color: var(--accent);
+}
+
+.preview-content {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+/* Mobile Responsive Enhancements */
+@media (max-width: 768px) {
+    .quick-buttons {
+        gap: 6px;
+    }
+    
+    .quick-btn {
+        font-size: 11px;
+        padding: 6px 12px;
+    }
+    
+    .search-dropdown {
+        max-height: 200px;
+    }
+    
+    .team-selection-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .vs-section {
+        order: -1;
+        flex-direction: row;
+        padding: 0;
+    }
+    
+    .random-button {
+        margin-top: 0;
+        margin-left: 12px;
+    }
+}
+</style>
