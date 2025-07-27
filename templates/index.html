@@ -1656,7 +1656,7 @@
             // Then check for club logo
             const logo = getTeamLogo(teamName);
             if (logo) {
-                return `<img src="${logo}" alt="${teamName}" onerror="this.parentElement.innerHTML='${getTeamEmoji(teamName)}'">`;
+                return '<img src="' + logo + '" alt="' + teamName + '" onerror="this.style.display=\'none\'">';
             }
             
             // Fallback to team emoji
@@ -1673,7 +1673,7 @@
             // Check for club logo
             const logo = getTeamLogo(teamName);
             if (logo && teamName) {
-                badgeElement.innerHTML = `<img src="${logo}" alt="${teamName}" onerror="this.parentElement.innerHTML='${getTeamEmoji(teamName)}'">`;
+                badgeElement.innerHTML = '<img src="' + logo + '" alt="' + teamName + '" onerror="this.style.display=\'none\'">';
             } else {
                 badgeElement.innerHTML = isHome ? '🏠' : '✈️';
             }
@@ -1873,7 +1873,7 @@
                 console.log('Response status:', response.status);
                 console.log('Response headers:', response.headers);
                 if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    throw new Error('HTTP ' + response.status + ': ' + response.statusText);
                 }
                 return response.json();
             })
@@ -1923,21 +1923,21 @@
             
             // Update match title
             document.getElementById('matchTitle').textContent = 
-                `${data.home_team.name} vs ${data.away_team.name}`;
+                data.home_team.name + ' vs ' + data.away_team.name;
             
             // Update home team
             updateTeamBadge(document.getElementById('homeResultBadge'), data.home_team.name, true);
             document.getElementById('homeName').textContent = data.home_team.name;
             document.getElementById('homeLeague').textContent = data.home_team.league;
             document.getElementById('homeStrength').textContent = Math.round(data.home_strength);
-            document.getElementById('homeWin').textContent = `${data.home_probability}%`;
+            document.getElementById('homeWin').textContent = data.home_probability + '%';
             
             // Update away team
             updateTeamBadge(document.getElementById('awayResultBadge'), data.away_team.name, false);
             document.getElementById('awayName').textContent = data.away_team.name;
             document.getElementById('awayLeague').textContent = data.away_team.league;
             document.getElementById('awayStrength').textContent = Math.round(data.away_strength);
-            document.getElementById('awayWin').textContent = `${data.away_probability}%`;
+            document.getElementById('awayWin').textContent = data.away_probability + '%';
             
             // Fetch and display team forms
             fetchTeamForm(data.home_team.name, 'home');
@@ -1951,7 +1951,7 @@
             
             // Update prediction
             document.getElementById('predictionResult').textContent = 
-                `${data.favorite} to win`;
+                data.favorite + ' to win';
             
             // Calculate confidence level
             const diff = Math.abs(data.home_probability - data.away_probability);
@@ -2006,7 +2006,7 @@
             historyList.innerHTML = '<div class="loading-text">Loading match history...</div>';
             
             // Fetch real H2H data
-            fetch(`/api/h2h/${encodeURIComponent(homeTeam)}/${encodeURIComponent(awayTeam)}`)
+            fetch('/api/h2h/' + encodeURIComponent(homeTeam) + '/' + encodeURIComponent(awayTeam))
                 .then(response => response.json())
                 .then(data => {
                     console.log('H2H API response:', data); // Debug logging
@@ -2071,7 +2071,7 @@
         function fetchUpcomingFixtures(homeTeam, awayTeam) {
             console.log('Fetching upcoming fixtures for:', homeTeam, 'and', awayTeam);
             
-            fetch(`/api/upcoming/${encodeURIComponent(homeTeam)}/${encodeURIComponent(awayTeam)}`)
+            fetch('/api/upcoming/' + encodeURIComponent(homeTeam) + '/' + encodeURIComponent(awayTeam))
                 .then(response => response.json())
                 .then(data => {
                     console.log('Upcoming fixtures response:', data);
