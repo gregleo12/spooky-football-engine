@@ -158,7 +158,7 @@ window.filterTeams = function(side) {
                 const teamOption = document.createElement('div');
                 teamOption.className = 'team-option';
                 teamOption.innerHTML = `<span class="team-flag">${getTeamFlag(league)}</span><span>${team}</span>`;
-                teamOption.onclick = () => selectTeam(side, team);
+                teamOption.addEventListener('click', () => selectTeam(side, team));
                 dropdownContent.appendChild(teamOption);
             });
         }

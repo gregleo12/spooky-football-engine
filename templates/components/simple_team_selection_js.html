@@ -69,7 +69,7 @@ function populateDropdown(side) {
                 <span class="team-flag">${getTeamFlag(league)}</span>
                 <span>${team}</span>
             `;
-            teamOption.onclick = () => selectTeam(side, team);
+            teamOption.addEventListener('click', () => selectTeam(side, team));
             dropdownContent.appendChild(teamOption);
         });
     });
@@ -145,7 +145,7 @@ window.filterTeams = function(side) {
                     <span class="team-flag">${getTeamFlag(league)}</span>
                     <span>${team}</span>
                 `;
-                teamOption.onclick = () => selectTeam(side, team);
+                teamOption.addEventListener('click', () => selectTeam(side, team));
                 dropdownContent.appendChild(teamOption);
             });
         }

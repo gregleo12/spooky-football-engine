@@ -14,8 +14,7 @@
                        id="homeTeamSearch" 
                        class="team-search-input"
                        placeholder="Search or select team..."
-                       onkeyup="filterTeams('home')"
-                       onfocus="showDropdown('home')"
+                       data-side="home"
                        autocomplete="off">
                 <div class="search-dropdown" id="homeDropdown">
                     <div class="dropdown-content" id="homeDropdownContent">
@@ -23,12 +22,12 @@
                     </div>
                 </div>
             </div>
-            <input type="hidden" id="homeTeam" onchange="updateButton()">
+            <input type="hidden" id="homeTeam">
         </div>
         
         <!-- VS Section -->
         <div class="vs-section">
-            <button class="swap-button" onclick="swapTeams()" title="Swap teams">⇄</button>
+            <button class="swap-button" id="swapBtn" title="Swap teams">⇄</button>
             <span class="vs-text" style="color: var(--text-secondary); font-size: 1.2rem; font-weight: 600;">VS</span>
         </div>
         
@@ -40,8 +39,7 @@
                        id="awayTeamSearch" 
                        class="team-search-input"
                        placeholder="Search or select team..."
-                       onkeyup="filterTeams('away')"
-                       onfocus="showDropdown('away')"
+                       data-side="away"
                        autocomplete="off">
                 <div class="search-dropdown" id="awayDropdown">
                     <div class="dropdown-content" id="awayDropdownContent">
@@ -49,12 +47,12 @@
                     </div>
                 </div>
             </div>
-            <input type="hidden" id="awayTeam" onchange="updateButton()">
+            <input type="hidden" id="awayTeam">
         </div>
     </div>
     
     <!-- Single Analyze Button -->
-    <button class="analyze-btn" id="analyzeBtn" onclick="analyzeMatch()" disabled>
+    <button class="analyze-btn" id="analyzeBtn" disabled>
         <span class="btn-icon">⚡</span>
         <span class="btn-text">ANALYZE MATCH</span>
     </button>

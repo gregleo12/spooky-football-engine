@@ -1,0 +1,97 @@
+<!-- CSP Compliant Event Handlers -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Setting up CSP-compliant event handlers...');
+    
+    // Analyze button
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    if (analyzeBtn) {
+        analyzeBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (window.analyzeMatch) {
+                window.analyzeMatch();
+            } else {
+                console.error('analyzeMatch function not found');
+            }
+        });
+        console.log('Analyze button handler attached');
+    }
+    
+    // Swap button
+    const swapBtn = document.getElementById('swapBtn');
+    if (swapBtn) {
+        swapBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (window.swapTeams) {
+                window.swapTeams();
+            } else {
+                console.error('swapTeams function not found');
+            }
+        });
+        console.log('Swap button handler attached');
+    }
+    
+    // Team search inputs
+    const homeSearch = document.getElementById('homeTeamSearch');
+    const awaySearch = document.getElementById('awayTeamSearch');
+    
+    if (homeSearch) {
+        homeSearch.addEventListener('keyup', function() {
+            if (window.filterTeams) {
+                window.filterTeams('home');
+            }
+        });
+        homeSearch.addEventListener('focus', function() {
+            if (window.showDropdown) {
+                window.showDropdown('home');
+            }
+        });
+        console.log('Home search handlers attached');
+    }
+    
+    if (awaySearch) {
+        awaySearch.addEventListener('keyup', function() {
+            if (window.filterTeams) {
+                window.filterTeams('away');
+            }
+        });
+        awaySearch.addEventListener('focus', function() {
+            if (window.showDropdown) {
+                window.showDropdown('away');
+            }
+        });
+        console.log('Away search handlers attached');
+    }
+    
+    // Hidden team inputs change events
+    const homeTeam = document.getElementById('homeTeam');
+    const awayTeam = document.getElementById('awayTeam');
+    
+    if (homeTeam) {
+        homeTeam.addEventListener('change', function() {
+            if (window.updateButton) {
+                window.updateButton();
+            }
+        });
+    }
+    
+    if (awayTeam) {
+        awayTeam.addEventListener('change', function() {
+            if (window.updateButton) {
+                window.updateButton();
+            }
+        });
+    }
+    
+    // Initialize teams on load
+    if (window.initializeTeamSelects) {
+        window.initializeTeamSelects();
+    } else if (window.initializeTeams) {
+        window.initializeTeams();
+    } else {
+        console.error('Team initialization function not found');
+    }
+    
+    console.log('All CSP-compliant event handlers attached');
+});
+</script>
