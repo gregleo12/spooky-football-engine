@@ -1814,8 +1814,16 @@
         }
         
         function analyzeMatch() {
-            const homeTeam = document.getElementById('homeTeam').value;
-            const awayTeam = document.getElementById('awayTeam').value;
+            let homeTeam = document.getElementById('homeTeam').value;
+            let awayTeam = document.getElementById('awayTeam').value;
+            
+            // Ensure we're working with strings, not objects
+            if (typeof homeTeam === 'object' && homeTeam !== null) {
+                homeTeam = homeTeam.name || homeTeam.toString();
+            }
+            if (typeof awayTeam === 'object' && awayTeam !== null) {
+                awayTeam = awayTeam.name || awayTeam.toString();
+            }
             
             if (!homeTeam || !awayTeam) {
                 showError('Please select both teams');
@@ -1836,8 +1844,13 @@
             
             // Debug logging
             console.log('Analyzing match:', homeTeam, 'vs', awayTeam);
+            console.log('Home team type:', typeof homeTeam, 'Away team type:', typeof awayTeam);
             console.log('Current URL:', window.location.href);
             console.log('Fetching from:', window.location.origin + '/analyze');
+            console.log('Request body:', JSON.stringify({
+                home_team: homeTeam,
+                away_team: awayTeam
+            }));
             
             // API call
             fetch('/analyze', {
