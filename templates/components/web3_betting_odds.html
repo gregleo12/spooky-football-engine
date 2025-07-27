@@ -181,24 +181,87 @@
     letter-spacing: 0.05em;
 }
 
-/* Enhanced Card Interactions */
+/* Enhanced Card Interactions with Premium Web3 Effects */
 .odds-card[data-market]:hover {
     cursor: pointer;
+    position: relative;
+    transform: translateY(-8px) scale(1.02);
 }
 
 .odds-card[data-market="home"]:hover {
     background: linear-gradient(135deg, #1A1A2E 0%, #16213E 50%, #1A1A2E 100%);
     border-color: var(--neon-cyan);
+    animation: neonGlowCyan 2s ease-in-out infinite;
+    box-shadow: 
+        0 0 30px rgba(0, 255, 240, 0.6),
+        0 20px 40px rgba(0, 0, 0, 0.6);
 }
 
 .odds-card[data-market="draw"]:hover {
     background: linear-gradient(135deg, #1A1A2E 0%, #16213E 50%, #1A1A2E 100%);
     border-color: var(--electric-purple);
+    animation: neonGlowPurple 2s ease-in-out infinite;
+    box-shadow: 
+        0 0 30px rgba(139, 92, 246, 0.6),
+        0 20px 40px rgba(0, 0, 0, 0.6);
 }
 
 .odds-card[data-market="away"]:hover {
     background: linear-gradient(135deg, #1A1A2E 0%, #16213E 50%, #1A1A2E 100%);
     border-color: var(--tech-blue);
+    animation: neonGlowBlue 2s ease-in-out infinite;
+    box-shadow: 
+        0 0 30px rgba(0, 212, 255, 0.6),
+        0 20px 40px rgba(0, 0, 0, 0.6);
+}
+
+/* Premium Neon Glow Animations */
+@keyframes neonGlowCyan {
+    0%, 100% {
+        border-color: rgba(0, 255, 240, 0.5);
+        box-shadow: 
+            0 0 20px rgba(0, 255, 240, 0.3),
+            0 20px 40px rgba(0, 0, 0, 0.4);
+    }
+    50% {
+        border-color: rgba(0, 255, 240, 1);
+        box-shadow: 
+            0 0 40px rgba(0, 255, 240, 0.8),
+            0 0 60px rgba(0, 255, 240, 0.4),
+            0 25px 50px rgba(0, 0, 0, 0.6);
+    }
+}
+
+@keyframes neonGlowPurple {
+    0%, 100% {
+        border-color: rgba(139, 92, 246, 0.5);
+        box-shadow: 
+            0 0 20px rgba(139, 92, 246, 0.3),
+            0 20px 40px rgba(0, 0, 0, 0.4);
+    }
+    50% {
+        border-color: rgba(139, 92, 246, 1);
+        box-shadow: 
+            0 0 40px rgba(139, 92, 246, 0.8),
+            0 0 60px rgba(139, 92, 246, 0.4),
+            0 25px 50px rgba(0, 0, 0, 0.6);
+    }
+}
+
+@keyframes neonGlowBlue {
+    0%, 100% {
+        border-color: rgba(0, 212, 255, 0.5);
+        box-shadow: 
+            0 0 20px rgba(0, 212, 255, 0.3),
+            0 20px 40px rgba(0, 0, 0, 0.4);
+    }
+    50% {
+        border-color: rgba(0, 212, 255, 1);
+        box-shadow: 
+            0 0 40px rgba(0, 212, 255, 0.8),
+            0 0 60px rgba(0, 212, 255, 0.4),
+            0 25px 50px rgba(0, 0, 0, 0.6);
+    }
 }
 
 /* Mobile Optimizations */

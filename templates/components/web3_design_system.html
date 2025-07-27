@@ -1,47 +1,65 @@
-<!-- Web3/Crypto Design System -->
+<!-- PREMIUM WEB3/CRYPTO DESIGN SYSTEM -->
 <style>
-/* Web3/Crypto Color Palette */
+/* EXACT WEB3/CRYPTO COLOR PALETTE */
 :root {
-    /* Primary Background Colors */
-    --bg-primary: #0F0F23;      /* Deep space blue-black */
-    --bg-secondary: #1A1A2E;    /* Card backgrounds */
-    --bg-accent: #16213E;       /* Section backgrounds */
-    --bg-hover: #202040;        /* Hover states */
+    /* Deep Space Backgrounds */
+    --bg-primary: #0F0F23 !important;      /* Deep space black */
+    --bg-secondary: #1A1A2E !important;    /* Card backgrounds */
+    --bg-accent: #16213E !important;       /* Section backgrounds */
+    --bg-hover: #202040 !important;        /* Hover states */
+    --bg-glass: rgba(26, 26, 46, 0.4) !important; /* Glassmorphism */
     
-    /* Web3/Crypto Gradient System */
-    --gradient-primary: linear-gradient(135deg, #00FFF0 0%, #00D4FF 50%, #0099FF 100%);
-    --gradient-glow: linear-gradient(135deg, #00FFF0 0%, #00D4FF 100%);
-    --gradient-card: linear-gradient(135deg, #1A1A2E 0%, #16213E 100%);
-    --gradient-border: linear-gradient(135deg, #00FFF0 20%, #00D4FF 50%, #0099FF 80%);
+    /* NEON GRADIENT SYSTEM */
+    --gradient-primary: linear-gradient(135deg, #00FFF0 0%, #00D4FF 50%, #0099FF 100%) !important;
+    --gradient-secondary: linear-gradient(135deg, #00FFF0 0%, #00D4FF 100%) !important;
+    --gradient-glow: linear-gradient(135deg, #00FFF0 0%, #00D4FF 100%) !important;
+    --gradient-card: linear-gradient(135deg, rgba(26, 26, 46, 0.8) 0%, rgba(22, 33, 62, 0.8) 100%) !important;
+    --gradient-border: linear-gradient(135deg, #00FFF0 0%, #00D4FF 50%, #0099FF 100%) !important;
     
-    /* Accent Colors */
-    --neon-cyan: #00FFF0;       /* Primary accent */
-    --tech-blue: #00D4FF;       /* Secondary accent */
-    --deep-blue: #0099FF;       /* Tertiary accent */
-    --electric-purple: #8B5CF6; /* Purple accent */
+    /* NEON ACCENT COLORS */
+    --neon-cyan: #00FFF0 !important;       /* Primary neon */
+    --tech-blue: #00D4FF !important;       /* Secondary neon */
+    --deep-blue: #0099FF !important;       /* Tertiary neon */
+    --electric-purple: #8B5CF6 !important; /* Purple accent */
     
-    /* Text Colors */
-    --text-primary: #FFFFFF;
-    --text-secondary: #D1D5DB;
-    --text-accent: #00FFF0;
-    --text-muted: #9CA3AF;
+    /* TEXT COLORS */
+    --text-primary: #FFFFFF !important;
+    --text-secondary: #D1D5DB !important;
+    --text-accent: #00FFF0 !important;
+    --text-muted: #9CA3AF !important;
     
-    /* Border and Shadow Colors */
-    --border-primary: rgba(0, 255, 240, 0.2);
-    --border-glow: rgba(0, 255, 240, 0.4);
-    --shadow-neon: 0 0 20px rgba(0, 255, 240, 0.3);
-    --shadow-deep: 0 20px 40px rgba(0, 0, 0, 0.4);
+    /* BORDER AND SHADOW COLORS */
+    --border-primary: rgba(0, 255, 240, 0.3) !important;
+    --border-glow: rgba(0, 255, 240, 0.6) !important;
+    --shadow-neon: 0 0 30px rgba(0, 255, 240, 0.5) !important;
+    --shadow-deep: 0 20px 40px rgba(0, 0, 0, 0.6) !important;
+    --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
 }
 
-/* Override existing variables for Web3 theme */
-body {
-    background: var(--bg-primary);
-    color: var(--text-primary);
-    font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+/* Override existing variables for Web3 theme - FORCE DEEP SPACE */
+html, body {
+    background: #0F0F23 !important;
+    color: var(--text-primary) !important;
+    font-family: 'Plus Jakarta Sans', -apple-system, sans-serif !important;
     overflow-x: hidden;
 }
 
-/* Web3 Background Effects */
+/* Force deep space background on all major elements */
+.container {
+    background: transparent !important;
+}
+
+.header {
+    background: transparent !important;
+}
+
+/* Override any existing background colors */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--neon-cyan) var(--bg-primary);
+}
+
+/* Web3 Background Effects - DEEP SPACE PRIORITY */
 .web3-background {
     position: fixed;
     top: 0;
@@ -49,7 +67,19 @@ body {
     width: 100%;
     height: 100%;
     z-index: -1;
-    background: radial-gradient(ellipse at center, #16213E 0%, #0F0F23 70%);
+    background: radial-gradient(ellipse at center, #16213E 0%, #0F0F23 70%) !important;
+}
+
+/* Force deep space on body with pseudo-element */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #0F0F23 !important;
+    z-index: -2;
 }
 
 .web3-background::before {
@@ -76,14 +106,28 @@ body {
 
 .odds-display {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 2.5rem;
+    font-size: 2.8rem;
     font-weight: 700;
     background: var(--gradient-primary);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    filter: drop-shadow(0 0 10px rgba(0, 255, 240, 0.5));
+    filter: drop-shadow(0 0 15px rgba(0, 255, 240, 0.8));
     line-height: 1;
+    text-shadow: 
+        0 0 20px rgba(0, 255, 240, 0.6),
+        0 0 40px rgba(0, 212, 255, 0.4),
+        0 0 60px rgba(0, 153, 255, 0.2);
+    animation: textGlow 3s ease-in-out infinite;
+}
+
+@keyframes textGlow {
+    0%, 100% {
+        filter: drop-shadow(0 0 15px rgba(0, 255, 240, 0.8));
+    }
+    50% {
+        filter: drop-shadow(0 0 25px rgba(0, 255, 240, 1));
+    }
 }
 
 .team-name {
@@ -122,15 +166,22 @@ body {
     display: block;
 }
 
-/* Card Components with Web3 Effects */
+/* Card Components with Premium Web3 Glassmorphism */
 .web3-card {
-    background: var(--gradient-card);
+    background: linear-gradient(135deg, 
+        rgba(26, 26, 46, 0.9) 0%, 
+        rgba(22, 33, 62, 0.8) 50%, 
+        rgba(26, 26, 46, 0.9) 100%);
     border: 1px solid var(--border-primary);
-    border-radius: 16px;
-    padding: 24px;
-    backdrop-filter: blur(10px);
-    box-shadow: var(--shadow-deep);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 20px;
+    padding: 28px;
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.4),
+        0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+        0 0 20px rgba(0, 255, 240, 0.1);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
     position: relative;
     overflow: hidden;
@@ -152,12 +203,18 @@ body {
 }
 
 .web3-card:hover {
-    transform: translateY(-4px);
+    transform: translateY(-6px) scale(1.02);
     border-color: var(--border-glow);
+    background: linear-gradient(135deg, 
+        rgba(26, 26, 46, 0.95) 0%, 
+        rgba(22, 33, 62, 0.9) 50%, 
+        rgba(26, 26, 46, 0.95) 100%);
     box-shadow: 
-        var(--shadow-neon),
-        0 0 40px rgba(0, 212, 255, 0.2),
-        var(--shadow-deep);
+        0 0 40px rgba(0, 255, 240, 0.6),
+        0 0 60px rgba(0, 212, 255, 0.3),
+        0 20px 60px rgba(0, 0, 0, 0.6),
+        0 0 0 1px rgba(0, 255, 240, 0.2) inset;
+    backdrop-filter: blur(30px) saturate(200%);
 }
 
 .web3-card:hover::before {
@@ -266,16 +323,33 @@ body {
     100% { background-position: 200% 0; }
 }
 
-/* Market Section Styling */
+/* Premium Market Section Styling */
 .odds-section {
-    background: var(--gradient-card);
+    background: linear-gradient(135deg, 
+        rgba(26, 26, 46, 0.9) 0%, 
+        rgba(22, 33, 62, 0.8) 50%, 
+        rgba(26, 26, 46, 0.9) 100%);
     border: 1px solid var(--border-primary);
-    border-radius: 20px;
-    padding: 32px;
-    margin-bottom: 32px;
-    backdrop-filter: blur(10px);
+    border-radius: 24px;
+    padding: 36px;
+    margin-bottom: 36px;
+    backdrop-filter: blur(25px) saturate(180%);
+    -webkit-backdrop-filter: blur(25px) saturate(180%);
+    box-shadow: 
+        0 12px 40px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+        0 0 30px rgba(0, 255, 240, 0.15);
     position: relative;
     overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.odds-section:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+        0 16px 50px rgba(0, 0, 0, 0.6),
+        0 0 0 1px rgba(255, 255, 255, 0.1) inset,
+        0 0 40px rgba(0, 255, 240, 0.25);
 }
 
 .odds-section::before {
