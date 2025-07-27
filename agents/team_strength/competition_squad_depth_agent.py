@@ -16,6 +16,18 @@ HEADERS = {"x-apisports-key": API_KEY}
 SEASON = 2024
 FALLBACK_SCORE = 0.5
 
+# Load team API ID mapping
+import os
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+TEAM_API_IDS_PATH = os.path.join(SCRIPT_DIR, "..", "shared", "team_api_ids.json")
+
+try:
+    with open(TEAM_API_IDS_PATH, 'r', encoding='utf-8') as f:
+        TEAM_API_IDS = json.load(f)
+except FileNotFoundError:
+    print(f"⚠️ Warning: team_api_ids.json not found at {TEAM_API_IDS_PATH}")
+    TEAM_API_IDS = {}
+
 def fetch_full_squad_with_pagination(team_api_id, team_name):
     """Fetch complete squad handling API pagination"""
     all_players = []
@@ -60,7 +72,7 @@ def fetch_full_squad_with_pagination(team_api_id, team_name):
     
     return all_players
 
-def analyze_squad_composition(players, team_name):
+def analyze_squad_composition(players, team_name, squad_value_millions=0):
     """Analyze squad composition for depth scoring"""
     if not players:
         return {
@@ -106,6 +118,8 @@ def analyze_squad_composition(players, team_name):
     total_players = len(players)
     avg_age = sum(ages) / len(ages) if ages else 25
     
+    # Use the passed squad value for quality multiplier
+    
     # Calculate raw depth score (absolute, not normalized)
     raw_depth_score = calculate_raw_depth_score(
         total_players,
@@ -113,7 +127,8 @@ def analyze_squad_composition(players, team_name):
         positions['defenders'], 
         positions['midfielders'],
         positions['forwards'],
-        avg_age
+        avg_age,
+        squad_value_millions
     )
     
     return {
@@ -126,7 +141,7 @@ def analyze_squad_composition(players, team_name):
         "raw_depth_score": raw_depth_score
     }
 
-def calculate_raw_depth_score(total, gk, def_, mid, fwd, avg_age):
+def calculate_raw_depth_score(total, gk, def_, mid, fwd, avg_age, squad_value_millions=0):
     """Calculate raw squad depth score (absolute scale, not competition-relative)"""
     
     # Base score from total squad size
@@ -157,14 +172,31 @@ def calculate_raw_depth_score(total, gk, def_, mid, fwd, avg_age):
     age_score = 1.0 - abs(avg_age - 25) / 10  # Peak around 25
     age_score = max(0.0, min(1.0, age_score))
     
-    # Combined score (weighted)
-    final_score = (
-        size_score * 0.4 +           # 40% squad size
-        position_balance * 0.5 +      # 50% position balance  
+    # Quality multiplier based on squad value
+    quality_multiplier = 1.0
+    if squad_value_millions:
+        # Higher value squads should have higher depth scores
+        # Scale: €50M = 1.0x, €500M = 1.5x, €1000M+ = 2.0x
+        if squad_value_millions >= 1000:
+            quality_multiplier = 2.0
+        elif squad_value_millions >= 500:
+            quality_multiplier = 1.0 + (squad_value_millions - 500) / 500
+        elif squad_value_millions >= 50:
+            quality_multiplier = 1.0 + (squad_value_millions - 50) / 900 * 0.5
+        else:
+            quality_multiplier = 0.5 + (squad_value_millions / 50) * 0.5
+    
+    # Combined score (weighted with quality)
+    base_score = (
+        size_score * 0.3 +           # 30% squad size
+        position_balance * 0.6 +      # 60% position balance  
         age_score * 0.1               # 10% age balance
     )
     
-    return round(final_score, 3)
+    # Apply quality multiplier
+    final_score = base_score * quality_multiplier
+    
+    return round(min(2.0, max(0.0, final_score)), 3)  # Allow scores up to 2.0 for elite squads
 
 def normalize_competition_scores(competition_data):
     """Normalize squad depth scores within competition (0-1 scale)"""
@@ -214,12 +246,14 @@ def update_competition_squad_depth(competition_name=None):
         print(f"\n🏆 Processing {comp_name}")
         print("-" * 40)
         
-        # Get teams in this competition
+        # Get teams in this competition with squad values
         c.execute("""
-            SELECT ct.team_id, ct.team_name, ct.api_team_id 
-            FROM competition_teams ct 
-            WHERE ct.competition_id = ? AND ct.season = ?
-        """, (comp_id, SEASON))
+            SELECT cts.team_id, cts.team_name,
+                   COALESCE(cts.squad_value_score, 0) as squad_value_millions
+            FROM competition_team_strength cts
+            WHERE cts.competition_id = ? AND (cts.season = ? OR ? = 'International')
+            AND cts.team_name IS NOT NULL
+        """, (comp_id, SEASON, comp_name))
         
         competition_teams = c.fetchall()
         
@@ -230,8 +264,11 @@ def update_competition_squad_depth(competition_name=None):
         squad_data = {}
         
         # Analyze each team's squad depth
-        for i, (team_id, team_name, api_team_id) in enumerate(competition_teams, 1):
+        for i, (team_id, team_name, squad_value_millions) in enumerate(competition_teams, 1):
             print(f"[{i}/{len(competition_teams)}] Processing {team_name}...")
+            
+            # Get API ID from mapping
+            api_team_id = TEAM_API_IDS.get(team_name)
             
             if not api_team_id:
                 print(f"   ⚠️ No API ID for {team_name}")
@@ -248,12 +285,13 @@ def update_competition_squad_depth(competition_name=None):
                 print(f"   📊 Found {len(players)} total players")
                 
                 # Analyze squad composition
-                analysis = analyze_squad_composition(players, team_name)
+                analysis = analyze_squad_composition(players, team_name, squad_value_millions)
                 analysis["team_name"] = team_name
                 squad_data[team_id] = analysis
                 
                 print(f"   🏟️ Composition: {analysis['goalkeepers']}GK, {analysis['defenders']}DEF, {analysis['midfielders']}MID, {analysis['forwards']}FWD")
                 print(f"   📈 Average age: {analysis['avg_age']} years")
+                print(f"   💰 Squad value: €{squad_value_millions}M")
                 print(f"   ⚽ Raw depth score: {analysis['raw_depth_score']}")
                 
             except Exception as e:

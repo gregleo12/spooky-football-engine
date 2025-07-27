@@ -2422,61 +2422,11 @@
         });
 
         // ============================================
-        // PHASE 3 ENHANCED FEATURES
+        // CORE ENGINE FEATURES
         // ============================================
 
-        // Update live events counter
-        function updateLiveEvents() {
-            fetch('/api/v3/live-matches')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.count !== undefined) {
-                        document.getElementById('live-events-count').textContent = data.count;
-                    }
-                })
-                .catch(error => {
-                    console.log('Live events not available:', error);
-                });
-        }
-
-        // Enhanced match analysis with multiple models
-        function enhancedAnalyzeMatch(modelType = 'enhanced') {
-            const homeTeam = document.getElementById('homeTeam').value;
-            const awayTeam = document.getElementById('awayTeam').value;
-            
-            if (!homeTeam || !awayTeam) {
-                showError('Please select both teams');
-                return;
-            }
-
-            // Use Phase 3 prediction API
-            fetch('/api/v3/predict', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    home_team: homeTeam,
-                    away_team: awayTeam,
-                    model_type: modelType
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    // Fallback to original analyze function
-                    console.log('Phase 3 not available, using original analyzer');
-                    analyzeMatch();
-                } else {
-                    showEnhancedResults(data);
-                }
-            })
-            .catch(error => {
-                console.log('Enhanced analysis failed, using fallback:', error);
-                analyzeMatch();
-            });
-        }
-
-        // Show enhanced results with Phase 3 data
-        function showEnhancedResults(data) {
+        // Core results display
+        function showCoreResults(data) {
             const resultContent = document.getElementById('resultContent');
             
             // Enhanced results display
@@ -2550,38 +2500,13 @@
             document.getElementById('analyzeBtn').disabled = false;
         }
 
-        // System status check
+        // Core engine status
         function checkSystemStatus() {
-            fetch('/api/v3/system-status')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.phase_3_available) {
-                        console.log('✅ Phase 3 features available');
-                        // Replace analyze button with enhanced version
-                        console.log('🔧 Replacing button with Phase 3 enhanced version');
-                        const analyzeBtn = document.getElementById('analyzeBtn');
-                        if (analyzeBtn) {
-                            analyzeBtn.onclick = () => {
-                                console.log('🚀 Enhanced analyze button clicked!');
-                                enhancedAnalyzeMatch('enhanced');
-                            };
-                        }
-                    } else {
-                        console.log('⚠️ Phase 3 features not available, using standard analyzer');
-                    }
-                })
-                .catch(error => {
-                    console.log('System status check failed:', error);
-                });
+            console.log('ℹ️ Core engine active');
         }
 
-        // Initialize Phase 3 features on page load
+        // Initialize core features on page load
         document.addEventListener('DOMContentLoaded', function() {
-            checkSystemStatus();
-            updateLiveEvents();
-            
-            // Update live events every 30 seconds
-            setInterval(updateLiveEvents, 30000);
             
             // Add simple analyze button listener (CSP-safe)
             const analyzeBtn = document.getElementById('analyzeBtn');
