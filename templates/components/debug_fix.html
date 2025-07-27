@@ -1,0 +1,201 @@
+<!-- Debug Fix Component -->
+<script>
+// Make all critical functions globally accessible immediately
+window.analyzeMatch = async function() {
+    console.log('analyzeMatch called');
+    
+    const homeTeam = document.getElementById('homeTeam').value;
+    const awayTeam = document.getElementById('awayTeam').value;
+    
+    console.log('Home team:', homeTeam);
+    console.log('Away team:', awayTeam);
+    
+    if (!homeTeam || !awayTeam) {
+        alert('Please select both teams');
+        return;
+    }
+    
+    if (homeTeam === awayTeam) {
+        alert('Please select different teams');
+        return;
+    }
+    
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    const btnText = analyzeBtn.querySelector('.btn-text');
+    const btnIcon = analyzeBtn.querySelector('.btn-icon');
+    
+    // Show loading state
+    analyzeBtn.disabled = true;
+    btnText.textContent = 'Analyzing...';
+    
+    try {
+        const response = await fetch('/analyze', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                home_team: homeTeam,
+                away_team: awayTeam
+            })
+        });
+        
+        const data = await response.json();
+        console.log('Analysis result:', data);
+        
+        // Show results container
+        document.getElementById('resultsContainer').style.display = 'block';
+        document.getElementById('resultContent').style.display = 'block';
+        
+        // Call the results display functions
+        if (typeof showResults === 'function') {
+            showResults(data);
+        } else if (window.showResults) {
+            window.showResults(data);
+        } else {
+            console.error('showResults not found - updating manually');
+            // Fallback manual update
+            updateResultsManually(data);
+        }
+        
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error analyzing match: ' + error.message);
+    } finally {
+        // Reset button
+        analyzeBtn.disabled = false;
+        btnText.textContent = 'ANALYZE MATCH';
+        updateButton();
+    }
+};
+
+// Fallback manual results update
+function updateResultsManually(data) {
+    // Update basic match info
+    const matchTitle = document.getElementById('matchTitle');
+    if (matchTitle) matchTitle.textContent = data.home_team.name + ' vs ' + data.away_team.name;
+    
+    // Update home team
+    const homeName = document.getElementById('homeName');
+    if (homeName) homeName.textContent = data.home_team.name;
+    
+    const homeStrength = document.getElementById('homeStrength');
+    if (homeStrength) homeStrength.textContent = Math.round(data.home_strength);
+    
+    // Update away team
+    const awayName = document.getElementById('awayName');
+    if (awayName) awayName.textContent = data.away_team.name;
+    
+    const awayStrength = document.getElementById('awayStrength');
+    if (awayStrength) awayStrength.textContent = Math.round(data.away_strength);
+    
+    // Show betting odds if available
+    if (data.betting_odds && window.displayBettingOdds) {
+        window.displayBettingOdds(data.betting_odds, data.home_team.name, data.away_team.name);
+    }
+}
+
+// Also make other critical functions global
+window.updateButton = function() {
+    const homeTeam = document.getElementById('homeTeam').value;
+    const awayTeam = document.getElementById('awayTeam').value;
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    const btnText = analyzeBtn.querySelector('.btn-text');
+    
+    if (homeTeam && awayTeam && homeTeam !== awayTeam) {
+        analyzeBtn.disabled = false;
+        btnText.textContent = 'ANALYZE MATCH';
+    } else {
+        analyzeBtn.disabled = true;
+        btnText.textContent = homeTeam && awayTeam && homeTeam === awayTeam ? 
+            'Select different teams' : 'Select both teams';
+    }
+};
+
+window.swapTeams = function() {
+    console.log('Swapping teams');
+    const homeInput = document.getElementById('homeTeam');
+    const awayInput = document.getElementById('awayTeam');
+    const homeSearch = document.getElementById('homeTeamSearch');
+    const awaySearch = document.getElementById('awayTeamSearch');
+    
+    if (homeInput && awayInput && homeSearch && awaySearch) {
+        const tempValue = homeInput.value;
+        homeInput.value = awayInput.value;
+        awayInput.value = tempValue;
+        
+        const tempSearch = homeSearch.value;
+        homeSearch.value = awaySearch.value;
+        awaySearch.value = tempSearch;
+        
+        updateButton();
+    }
+};
+
+window.filterTeams = function(side) {
+    const searchInput = document.getElementById(side + 'TeamSearch');
+    const filter = searchInput.value.toLowerCase();
+    const dropdownContent = document.getElementById(side + 'DropdownContent');
+    
+    if (!dropdownContent) return;
+    
+    // Clear and repopulate based on filter
+    const teams = window.allTeams || {};
+    dropdownContent.innerHTML = '';
+    
+    Object.keys(teams).forEach(league => {
+        const filteredTeams = teams[league].filter(team => 
+            team.toLowerCase().includes(filter)
+        );
+        
+        if (filteredTeams.length > 0) {
+            const leagueHeader = document.createElement('div');
+            leagueHeader.className = 'league-header';
+            leagueHeader.textContent = league;
+            dropdownContent.appendChild(leagueHeader);
+            
+            filteredTeams.forEach(team => {
+                const teamOption = document.createElement('div');
+                teamOption.className = 'team-option';
+                teamOption.innerHTML = `<span class="team-flag">${getTeamFlag(league)}</span><span>${team}</span>`;
+                teamOption.onclick = () => selectTeam(side, team);
+                dropdownContent.appendChild(teamOption);
+            });
+        }
+    });
+};
+
+window.showDropdown = function(side) {
+    const dropdown = document.getElementById(side + 'Dropdown');
+    if (dropdown) {
+        dropdown.classList.add('show');
+    }
+};
+
+window.selectTeam = function(side, teamName) {
+    const searchInput = document.getElementById(side + 'TeamSearch');
+    const hiddenInput = document.getElementById(side + 'Team');
+    const dropdown = document.getElementById(side + 'Dropdown');
+    
+    if (searchInput && hiddenInput && dropdown) {
+        searchInput.value = teamName;
+        hiddenInput.value = teamName;
+        dropdown.classList.remove('show');
+        updateButton();
+    }
+};
+
+function getTeamFlag(league) {
+    const flags = {
+        'Premier League': '🏴',
+        'La Liga': '🇪🇸',
+        'Serie A': '🇮🇹',
+        'Bundesliga': '🇩🇪',
+        'Ligue 1': '🇫🇷',
+        'International': '🌍'
+    };
+    return flags[league] || '⚽';
+}
+
+console.log('Debug fix loaded - all functions should work now');
+</script>
