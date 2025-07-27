@@ -1549,7 +1549,7 @@ def deployment_check():
     return jsonify({
         'status': 'active',
         'timestamp': datetime.now().isoformat(),
-        'latest_commit': '252e252',
+        'latest_commit': 'e955ce8',
         'phase_3_betting_odds': True,
         'message': 'Phase 3 betting odds display deployed successfully'
     })
