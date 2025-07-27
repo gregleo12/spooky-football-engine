@@ -850,6 +850,101 @@ def get_current_time():
         'deployment_version': '2025-07-26-phase3-v4'
     })
 
+@app.route('/test-analyze')
+def test_analyze_page():
+    """Simple test page for analyze functionality"""
+    teams_by_league, all_teams = demo.get_all_teams()
+    
+    html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Test Analyze Function</title>
+        <style>
+            body {{ background: #050510; color: white; font-family: Arial; padding: 20px; }}
+            select, button {{ padding: 10px; margin: 10px; }}
+            #result {{ background: #1a1a2e; padding: 20px; margin: 20px 0; }}
+        </style>
+    </head>
+    <body>
+        <h1>🧪 Test Analyze Function</h1>
+        <p>Generated: {datetime.now().isoformat()}</p>
+        
+        <div>
+            <label>Home Team:</label>
+            <select id="homeTeam">
+                <option value="">Select Home Team</option>
+                {''.join(f'<option value="{team}">{team}</option>' for team in all_teams)}
+            </select>
+        </div>
+        
+        <div>
+            <label>Away Team:</label>
+            <select id="awayTeam">
+                <option value="">Select Away Team</option>
+                {''.join(f'<option value="{team}">{team}</option>' for team in all_teams)}
+            </select>
+        </div>
+        
+        <button onclick="testAnalyze()">Test Analyze</button>
+        
+        <div id="result"></div>
+        
+        <script>
+        function testAnalyze() {{
+            const home = document.getElementById('homeTeam').value;
+            const away = document.getElementById('awayTeam').value;
+            
+            if (!home || !away) {{
+                document.getElementById('result').innerHTML = '❌ Please select both teams';
+                return;
+            }}
+            
+            if (home === away) {{
+                document.getElementById('result').innerHTML = '❌ Please select different teams';
+                return;
+            }}
+            
+            document.getElementById('result').innerHTML = '⏳ Analyzing...';
+            
+            fetch('/analyze', {{
+                method: 'POST',
+                headers: {{ 'Content-Type': 'application/json' }},
+                body: JSON.stringify({{ home_team: home, away_team: away }})
+            }})
+            .then(response => {{
+                console.log('Status:', response.status);
+                if (!response.ok) throw new Error(`HTTP ${{response.status}}`);
+                return response.json();
+            }})
+            .then(data => {{
+                console.log('Response:', data);
+                if (data.error) {{
+                    document.getElementById('result').innerHTML = `❌ Error: ${{data.error}}`;
+                }} else {{
+                    document.getElementById('result').innerHTML = `
+                        <h3>✅ Analysis Complete</h3>
+                        <p><strong>${{data.home_team.name}}</strong> vs <strong>${{data.away_team.name}}</strong></p>
+                        <p>Favorite: <strong>${{data.favorite}}</strong> (${{data.favorite_probability.toFixed(1)}}%)</p>
+                        <p>Type: ${{data.score_type}}</p>
+                        <p>${{data.explanation}}</p>
+                    `;
+                }}
+            }})
+            .catch(error => {{
+                console.error('Error:', error);
+                document.getElementById('result').innerHTML = `❌ Network Error: ${{error.message}}`;
+            }});
+        }}
+        </script>
+        
+        <a href="/">← Back to Main App</a>
+    </body>
+    </html>
+    """
+    
+    return html
+
 @app.route('/api/team-form/<team_name>')
 def get_team_form(team_name):
     """Get last 5 games form for a team"""
