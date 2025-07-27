@@ -1236,7 +1236,7 @@
                     </div>
                 </div>
                 
-                <button class="analyze-button" id="analyzeBtn" onclick="console.log('BUTTON CLICKED!'); analyzeMatch();">
+                <button class="analyze-button" id="analyzeBtn">
                     Analyze Match
                 </button>
             </div>
@@ -2582,7 +2582,86 @@
             
             // Update live events every 30 seconds
             setInterval(updateLiveEvents, 30000);
+            
+            // Add simple analyze button listener (CSP-safe)
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            if (analyzeBtn) {
+                analyzeBtn.addEventListener('click', function() {
+                    console.log('ANALYZE BUTTON CLICKED - CSP SAFE');
+                    simpleAnalyzeMatch();
+                });
+            }
         });
+        
+        // Simple analyze function that works with CSP
+        function simpleAnalyzeMatch() {
+            const homeTeam = document.getElementById('homeTeam').value;
+            const awayTeam = document.getElementById('awayTeam').value;
+            
+            console.log('Teams selected:', homeTeam, awayTeam);
+            
+            if (!homeTeam || !awayTeam) {
+                alert('Please select both teams');
+                return;
+            }
+            
+            if (homeTeam === awayTeam) {
+                alert('Please select different teams');
+                return;
+            }
+            
+            // Show loading
+            const resultsCard = document.getElementById('resultsCard');
+            if (resultsCard) {
+                resultsCard.style.display = 'block';
+                resultsCard.innerHTML = '<div style="padding: 20px; text-align: center; color: white;">⏳ Analyzing match...</div>';
+            }
+            
+            // Disable button
+            const btn = document.getElementById('analyzeBtn');
+            if (btn) btn.disabled = true;
+            
+            // Make API call
+            fetch('/analyze', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    home_team: homeTeam,
+                    away_team: awayTeam
+                })
+            })
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(data) {
+                if (btn) btn.disabled = false;
+                
+                if (data.error) {
+                    if (resultsCard) {
+                        resultsCard.innerHTML = '<div style="padding: 20px; color: #ff4444;">❌ Error: ' + data.error + '</div>';
+                    }
+                } else {
+                    if (resultsCard) {
+                        resultsCard.innerHTML = 
+                            '<div style="padding: 20px; color: white;">' +
+                            '<h3 style="color: #00ff88;">✅ Match Analysis</h3>' +
+                            '<p><strong>' + data.home_team.name + '</strong> vs <strong>' + data.away_team.name + '</strong></p>' +
+                            '<p>Favorite: <strong style="color: #00ff88;">' + data.favorite + '</strong> (' + data.favorite_probability.toFixed(1) + '%)</p>' +
+                            '<p>' + data.explanation + '</p>' +
+                            '</div>';
+                    }
+                }
+            })
+            .catch(function(error) {
+                console.error('Error:', error);
+                if (btn) btn.disabled = false;
+                if (resultsCard) {
+                    resultsCard.innerHTML = '<div style="padding: 20px; color: #ff4444;">❌ Network error</div>';
+                }
+            });
+        }
     </script>
 </body>
 </html>
