@@ -91,26 +91,94 @@ function calculateExpectedGoals(homeStrength, awayStrength) {
     return 1.5 + (adjustedStrength / 100) * 2.5;
 }
 
-// Update predicted score
+// Update predicted score with top probable scores
 function updatePredictedScore(data) {
-    const homeGoals = Math.round(data.home_probability / 30); // Rough conversion
-    const awayGoals = Math.round(data.away_probability / 35);
+    const scores = calculateTopProbableScores(data);
     
-    // Ensure realistic scores
-    const finalHomeGoals = Math.max(0, Math.min(4, homeGoals));
-    const finalAwayGoals = Math.max(0, Math.min(4, awayGoals));
+    // Show the most likely score
+    document.getElementById('predictedScore').textContent = scores[0].score;
     
-    document.getElementById('predictedScore').textContent = `${finalHomeGoals} - ${finalAwayGoals}`;
-    
-    // Update confidence based on probability difference
-    const diff = Math.abs(data.home_probability - data.away_probability);
-    const confidence = Math.min(90, 50 + diff);
+    // Update confidence based on the top score probability
+    const confidence = scores[0].probability * 100;
     
     const confidenceFill = document.querySelector('.predicted-score .confidence-fill');
     const confidenceText = document.querySelector('.predicted-score .confidence-text');
     
     if (confidenceFill) confidenceFill.style.width = confidence + '%';
     if (confidenceText) confidenceText.textContent = Math.round(confidence) + '% Confidence';
+    
+    // Add top 5 scores display
+    updateTopScoresDisplay(scores);
+}
+
+// Calculate top 5 most probable scores
+function calculateTopProbableScores(data) {
+    const homeStrength = data.home_strength / 100;
+    const awayStrength = data.away_strength / 100;
+    const homeAdv = 0.1; // Home advantage
+    
+    // Expected goals based on team strengths
+    const homeExpected = (homeStrength + homeAdv) * 2.5;
+    const awayExpected = awayStrength * 2.2;
+    
+    const scores = [];
+    
+    // Generate possible scores (0-0 to 4-4)
+    for (let h = 0; h <= 4; h++) {
+        for (let a = 0; a <= 4; a++) {
+            // Poisson distribution approximation
+            const homeProb = poissonProbability(h, homeExpected);
+            const awayProb = poissonProbability(a, awayExpected);
+            const totalProb = homeProb * awayProb;
+            
+            scores.push({
+                score: `${h} - ${a}`,
+                homeGoals: h,
+                awayGoals: a,
+                probability: totalProb
+            });
+        }
+    }
+    
+    // Sort by probability and return top 5
+    return scores.sort((a, b) => b.probability - a.probability).slice(0, 5);
+}
+
+// Poisson probability calculation
+function poissonProbability(k, lambda) {
+    return (Math.pow(lambda, k) * Math.exp(-lambda)) / factorial(k);
+}
+
+// Factorial helper function
+function factorial(n) {
+    if (n <= 1) return 1;
+    return n * factorial(n - 1);
+}
+
+// Update top scores display
+function updateTopScoresDisplay(scores) {
+    const predictedScoreElement = document.getElementById('predictedScore');
+    if (!predictedScoreElement) return;
+    
+    // Create or update top scores container
+    let topScoresContainer = document.querySelector('.top-scores-container');
+    if (!topScoresContainer) {
+        topScoresContainer = document.createElement('div');
+        topScoresContainer.className = 'top-scores-container';
+        predictedScoreElement.parentNode.appendChild(topScoresContainer);
+    }
+    
+    topScoresContainer.innerHTML = `
+        <div class="top-scores-title">Most Likely Scores:</div>
+        <div class="top-scores-grid">
+            ${scores.map((score, index) => `
+                <div class="score-option ${index === 0 ? 'primary' : ''}">
+                    <div class="score-text">${score.score}</div>
+                    <div class="score-prob">${(score.probability * 100).toFixed(1)}%</div>
+                </div>
+            `).join('')}
+        </div>
+    `;
 }
 
 // Update prediction with enhanced confidence visualization
@@ -176,17 +244,23 @@ function updateParameterBreakdown(data) {
     
     // Update parameter breakdown display
     const parameterGrid = document.querySelector('.parameter-grid');
-    if (parameterGrid) {
+    if (parameterGrid && currentMatchData) {
         parameterGrid.innerHTML = parameters.map(param => `
             <div class="parameter-item">
                 <div class="param-header">
                     <span class="param-name">${param.name}</span>
                     <span class="param-weight">${param.weight}</span>
                 </div>
+                <div class="param-labels">
+                    <span class="param-label-home">${currentMatchData.home_team.name}</span>
+                    <span class="param-vs">VS</span>
+                    <span class="param-label-away">${currentMatchData.away_team.name}</span>
+                </div>
                 <div class="param-bars">
                     <div class="param-bar home">
                         <div class="param-fill" style="width: ${Math.min(100, param.homeValue)}%"></div>
                     </div>
+                    <div class="param-vs">VS</div>
                     <div class="param-bar away">
                         <div class="param-fill" style="width: ${Math.min(100, param.awayValue)}%"></div>
                     </div>

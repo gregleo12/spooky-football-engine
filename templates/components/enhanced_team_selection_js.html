@@ -11,14 +11,45 @@ function initializeTeamData() {
     fetch('/api/teams')
         .then(response => response.json())
         .then(data => {
-            allTeams = data.teams || [];
+            console.log('API response:', data);
+            // Handle different possible response formats
+            if (data.teams) {
+                allTeams = data.teams;
+            } else if (Array.isArray(data)) {
+                allTeams = data;
+            } else if (data.teams_by_league) {
+                // Flatten teams from leagues
+                allTeams = [];
+                Object.values(data.teams_by_league).forEach(leagueTeams => {
+                    allTeams = allTeams.concat(leagueTeams);
+                });
+            }
+            
             populateTeamDropdowns();
             loadRecentMatchups();
             console.log('Loaded', allTeams.length, 'teams');
         })
         .catch(error => {
             console.error('Error loading teams:', error);
+            // Fallback: use template data if API fails
+            console.log('Trying fallback team loading...');
+            loadTeamsFromTemplate();
         });
+}
+
+// Fallback: Load teams from template data
+function loadTeamsFromTemplate() {
+    // Try to get teams from any existing select elements
+    const existingSelects = document.querySelectorAll('select[id$="Team"]');
+    if (existingSelects.length > 0) {
+        const options = existingSelects[0].querySelectorAll('option[value!=""]');
+        allTeams = Array.from(options).map(option => ({
+            name: option.value,
+            league: option.parentElement.label || 'Unknown'
+        }));
+        populateTeamDropdowns();
+        console.log('Loaded', allTeams.length, 'teams from template');
+    }
 }
 
 // Populate team dropdowns with search functionality
@@ -147,6 +178,10 @@ function swapTeams() {
     const homeHidden = document.getElementById('homeTeam');
     const awayHidden = document.getElementById('awayTeam');
     
+    console.log('Swapping teams...');
+    console.log('Home input:', homeInput?.value);
+    console.log('Away input:', awayInput?.value);
+    
     if (homeInput && awayInput && homeHidden && awayHidden) {
         // Swap display values
         const tempDisplay = homeInput.value;
@@ -164,6 +199,10 @@ function swapTeams() {
         
         updateButton();
         updateMatchPreview();
+        
+        console.log('After swap - Home:', homeInput.value, 'Away:', awayInput.value);
+    } else {
+        console.error('Swap failed - missing elements');
     }
 }
 
