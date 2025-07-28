@@ -263,23 +263,54 @@
                     body: JSON.stringify({ home_team: homeTeam, away_team: awayTeam })
                 });
                 
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status}`);
+                }
+                
                 const data = await response.json();
-                showResults(data);
+                
+                // Check if backend returned an error
+                if (data.error) {
+                    showResults({
+                        error: true,
+                        message: data.error
+                    });
+                } else {
+                    showResults(data);
+                }
                 
             } catch (error) {
-                alert('Error: ' + error.message);
+                console.error('Analysis error:', error);
+                showResults({
+                    error: true,
+                    message: error.message
+                });
             } finally {
                 btn.textContent = 'ANALYZE MATCH';
                 btn.disabled = false;
+                updateButton();
             }
         }
 
-        // Show results
+        // Show results with error handling
         function showResults(data) {
             const resultsSection = document.getElementById('resultsSection');
             const matchTitle = document.getElementById('matchTitle');
             const matchResults = document.getElementById('matchResults');
             const bettingOdds = document.getElementById('bettingOdds');
+            
+            // Check if data has the expected structure
+            if (!data || !data.home_team || !data.away_team) {
+                matchTitle.textContent = 'Error: Team data not available';
+                matchResults.innerHTML = `
+                    <p style="color: #ff6b6b;">One or both teams don't have sufficient data in the system.</p>
+                    <p>This usually happens with relegated teams or teams not in the current season.</p>
+                    <p>Please try selecting different teams.</p>
+                `;
+                bettingOdds.innerHTML = '';
+                resultsSection.style.display = 'block';
+                return;
+            }
             
             matchTitle.textContent = `${data.home_team.name} vs ${data.away_team.name}`;
             
@@ -289,7 +320,7 @@
                 <p><strong>Prediction:</strong> ${data.favorite} to win</p>
             `;
             
-            if (data.betting_odds) {
+            if (data.betting_odds && data.betting_odds.match_outcome) {
                 const odds = data.betting_odds.match_outcome;
                 bettingOdds.innerHTML = `
                     <h4>Betting Odds</h4>
@@ -297,6 +328,8 @@
                     <p>Draw: ${odds.draw.odds} (${odds.draw.probability}%)</p>
                     <p>Away Win: ${odds.away_win.odds} (${odds.away_win.probability}%)</p>
                 `;
+            } else {
+                bettingOdds.innerHTML = '<p style="color: #ffd93d;">Betting odds not available for this matchup.</p>';
             }
             
             resultsSection.style.display = 'block';
