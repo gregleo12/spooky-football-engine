@@ -106,21 +106,21 @@ function displayComparison(data) {
     // Prediction summary
     const predictionHtml = `
         <div class="stats-grid">
-            <div class="stat-card" style="background: ${data.team1_probability > data.team2_probability ? '#48bb78' : '#4a5568'};">
-                <div class="stat-value">${data.team1_probability}%</div>
-                <div class="stat-label">${data.team1.team_name} Win</div>
+            <div class="stat-card" style="background: ${data.team1_probability > data.team2_probability ? 'var(--success)' : 'var(--bg-tertiary)'};">
+                <div class="stat-value" style="color: ${data.team1_probability > data.team2_probability ? '#FFFFFF' : 'var(--accent-primary)'};">${data.team1_probability}%</div>
+                <div class="stat-label" style="color: #FFFFFF;">${data.team1.team_name} Win</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value">${data.same_league ? 'Same League' : 'Cross-League'}</div>
+                <div class="stat-value" style="color: var(--accent-primary);">${data.same_league ? 'Same League' : 'Cross-League'}</div>
                 <div class="stat-label">Match Type</div>
             </div>
-            <div class="stat-card" style="background: ${data.team2_probability > data.team1_probability ? '#48bb78' : '#4a5568'};">
-                <div class="stat-value">${data.team2_probability}%</div>
-                <div class="stat-label">${data.team2.team_name} Win</div>
+            <div class="stat-card" style="background: ${data.team2_probability > data.team1_probability ? 'var(--success)' : 'var(--bg-tertiary)'};">
+                <div class="stat-value" style="color: ${data.team2_probability > data.team1_probability ? '#FFFFFF' : 'var(--accent-primary)'};">${data.team2_probability}%</div>
+                <div class="stat-label" style="color: #FFFFFF;">${data.team2.team_name} Win</div>
             </div>
         </div>
-        <p style="text-align: center; margin-top: 1rem;">
-            <strong>Prediction:</strong> ${data.favorite} is favored to win
+        <p style="text-align: center; margin-top: 1rem; color: var(--text-secondary);">
+            <strong style="color: var(--text-primary);">Prediction:</strong> <span style="color: var(--accent-primary); font-weight: 600;">${data.favorite}</span> is favored to win
         </p>
     `;
     document.getElementById('prediction-summary').innerHTML = predictionHtml;
@@ -156,10 +156,10 @@ function displayComparison(data) {
                     const advantage = val1 > val2 ? data.team1.team_name : val2 > val1 ? data.team2.team_name : 'Even';
                     return `
                         <tr>
-                            <td>${param.name} (${param.weight})</td>
-                            <td style="color: ${val1 > val2 ? '#48bb78' : '#a0aec0'};">${val1.toFixed(2)}</td>
-                            <td style="color: ${val2 > val1 ? '#48bb78' : '#a0aec0'};">${val2.toFixed(2)}</td>
-                            <td>${advantage}</td>
+                            <td style="color: var(--text-primary);">${param.name} <span style="color: var(--text-muted);">(${param.weight})</span></td>
+                            <td class="important-number" style="color: ${val1 > val2 ? 'var(--accent-primary)' : 'var(--text-secondary)'};">${val1.toFixed(2)}</td>
+                            <td class="important-number" style="color: ${val2 > val1 ? 'var(--accent-primary)' : 'var(--text-secondary)'};">${val2.toFixed(2)}</td>
+                            <td style="color: var(--text-primary); font-weight: 600;">${advantage}</td>
                         </tr>
                     `;
                 }).join('')}
@@ -172,17 +172,17 @@ function displayComparison(data) {
     const strengthHtml = `
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
             <div>
-                <h3>${data.team1.team_name}</h3>
-                <p><strong>League:</strong> ${data.team1.league}</p>
-                <p><strong>Overall Strength:</strong> ${data.team1_strength.toFixed(2)}</p>
+                <h3 class="team-name" style="color: var(--text-primary);">${data.team1.team_name}</h3>
+                <p style="color: var(--text-secondary);"><strong style="color: var(--text-primary);">League:</strong> ${data.team1.league}</p>
+                <p style="color: var(--text-secondary);"><strong style="color: var(--text-primary);">Overall Strength:</strong> <span class="important-number" style="color: var(--accent-primary);">${data.team1_strength.toFixed(2)}</span></p>
                 <div class="coverage-bar">
                     <div class="coverage-fill" style="width: ${Math.min(100, (data.team1_strength / Math.max(data.team1_strength, data.team2_strength)) * 100)}%"></div>
                 </div>
             </div>
             <div>
-                <h3>${data.team2.team_name}</h3>
-                <p><strong>League:</strong> ${data.team2.league}</p>
-                <p><strong>Overall Strength:</strong> ${data.team2_strength.toFixed(2)}</p>
+                <h3 class="team-name" style="color: var(--text-primary);">${data.team2.team_name}</h3>
+                <p style="color: var(--text-secondary);"><strong style="color: var(--text-primary);">League:</strong> ${data.team2.league}</p>
+                <p style="color: var(--text-secondary);"><strong style="color: var(--text-primary);">Overall Strength:</strong> <span class="important-number" style="color: var(--accent-primary);">${data.team2_strength.toFixed(2)}</span></p>
                 <div class="coverage-bar">
                     <div class="coverage-fill" style="width: ${Math.min(100, (data.team2_strength / Math.max(data.team1_strength, data.team2_strength)) * 100)}%"></div>
                 </div>

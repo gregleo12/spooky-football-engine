@@ -283,6 +283,31 @@
         .status-success { color: var(--success); }
         .status-error { color: var(--error); }
         .status-warning { color: var(--warning); }
+        
+        /* Code blocks */
+        code {
+            background: var(--bg-tertiary);
+            color: var(--accent-primary);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9em;
+        }
+        
+        /* Ensure headings are white */
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--text-primary);
+        }
+        
+        /* Better paragraph contrast */
+        p {
+            color: var(--text-secondary);
+        }
+        
+        /* Monospace font fallback */
+        .important-number, .stat-value, .odds-display {
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+        }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
