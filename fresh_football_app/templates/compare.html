@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+
+{% block title %}Team Comparison - Football Analytics{% endblock %}
+
+{% block content %}
+<h1>⚔️ Team Comparison</h1>
+<p style="color: #a0aec0; margin-bottom: 2rem;">Head-to-head analysis using all 10 parameters</p>
+
+<div class="card">
+    <h2>Select Teams</h2>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+        <div>
+            <label for="team1">Home Team:</label>
+            <select id="team1">
+                <option value="">Select Home Team</option>
+                {% for league, teams in teams_by_league.items() %}
+                    <optgroup label="{{ league }}">
+                        {% for team in teams %}
+                            <option value="{{ team.name }}">{{ team.name }}</option>
+                        {% endfor %}
+                    </optgroup>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="team2">Away Team:</label>
+            <select id="team2">
+                <option value="">Select Away Team</option>
+                {% for league, teams in teams_by_league.items() %}
+                    <optgroup label="{{ league }}">
+                        {% for team in teams %}
+                            <option value="{{ team.name }}">{{ team.name }}</option>
+                        {% endfor %}
+                    </optgroup>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <button onclick="compareTeams()" class="btn">Compare Teams</button>
+</div>
+
+<div id="comparison-result" style="display: none;">
+    <div class="card">
+        <h2>Match Prediction</h2>
+        <div id="prediction-summary"></div>
+    </div>
+    
+    <div class="card">
+        <h2>Parameter Breakdown</h2>
+        <div id="parameter-comparison"></div>
+    </div>
+    
+    <div class="card">
+        <h2>Strength Analysis</h2>
+        <div id="strength-analysis"></div>
+    </div>
+</div>
+
+<div id="loading" style="display: none; text-align: center; padding: 2rem;">
+    <p>Analyzing teams...</p>
+</div>
+
+<div id="error-message" style="display: none;" class="alert alert-error">
+    <p id="error-text"></p>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function compareTeams() {
+    const team1 = document.getElementById('team1').value;
+    const team2 = document.getElementById('team2').value;
+    
+    if (!team1 || !team2) {
+        showError('Please select both teams');
+        return;
+    }
+    
+    if (team1 === team2) {
+        showError('Please select different teams');
+        return;
+    }
+    
+    showLoading(true);
+    hideError();
+    hideResult();
+    
+    try {
+        const response = await fetch(`/api/compare/${encodeURIComponent(team1)}/${encodeURIComponent(team2)}`);
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.error || 'Comparison failed');
+        }
+        
+        displayComparison(data);
+        showResult();
+    } catch (error) {
+        showError('Error: ' + error.message);
+    } finally {
+        showLoading(false);
+    }
+}
+
+function displayComparison(data) {
+    // Prediction summary
+    const predictionHtml = `
+        <div class="stats-grid">
+            <div class="stat-card" style="background: ${data.team1_probability > data.team2_probability ? '#48bb78' : '#4a5568'};">
+                <div class="stat-value">${data.team1_probability}%</div>
+                <div class="stat-label">${data.team1.team_name} Win</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">${data.same_league ? 'Same League' : 'Cross-League'}</div>
+                <div class="stat-label">Match Type</div>
+            </div>
+            <div class="stat-card" style="background: ${data.team2_probability > data.team1_probability ? '#48bb78' : '#4a5568'};">
+                <div class="stat-value">${data.team2_probability}%</div>
+                <div class="stat-label">${data.team2.team_name} Win</div>
+            </div>
+        </div>
+        <p style="text-align: center; margin-top: 1rem;">
+            <strong>Prediction:</strong> ${data.favorite} is favored to win
+        </p>
+    `;
+    document.getElementById('prediction-summary').innerHTML = predictionHtml;
+    
+    // Parameter comparison
+    const parameters = [
+        { key: 'elo_score', name: 'ELO Score', weight: '18%' },
+        { key: 'squad_value_score', name: 'Squad Value', weight: '15%' },
+        { key: 'form_score', name: 'Form Score', weight: '5%' },
+        { key: 'squad_depth_score', name: 'Squad Depth', weight: '2%' },
+        { key: 'key_player_availability_score', name: 'Key Players', weight: '10%' },
+        { key: 'motivation_factor_score', name: 'Motivation', weight: '10%' },
+        { key: 'tactical_matchup_score', name: 'Tactical', weight: '10%' },
+        { key: 'offensive_rating', name: 'Offensive', weight: '10%' },
+        { key: 'defensive_rating', name: 'Defensive', weight: '10%' },
+        { key: 'h2h_performance_score', name: 'H2H Performance', weight: '10%' }
+    ];
+    
+    const paramHtml = `
+        <table>
+            <thead>
+                <tr>
+                    <th>Parameter (Weight)</th>
+                    <th>${data.team1.team_name}</th>
+                    <th>${data.team2.team_name}</th>
+                    <th>Advantage</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${parameters.map(param => {
+                    const val1 = data.team1.parameters[param.key] || 0;
+                    const val2 = data.team2.parameters[param.key] || 0;
+                    const advantage = val1 > val2 ? data.team1.team_name : val2 > val1 ? data.team2.team_name : 'Even';
+                    return `
+                        <tr>
+                            <td>${param.name} (${param.weight})</td>
+                            <td style="color: ${val1 > val2 ? '#48bb78' : '#a0aec0'};">${val1.toFixed(2)}</td>
+                            <td style="color: ${val2 > val1 ? '#48bb78' : '#a0aec0'};">${val2.toFixed(2)}</td>
+                            <td>${advantage}</td>
+                        </tr>
+                    `;
+                }).join('')}
+            </tbody>
+        </table>
+    `;
+    document.getElementById('parameter-comparison').innerHTML = paramHtml;
+    
+    // Strength analysis
+    const strengthHtml = `
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+            <div>
+                <h3>${data.team1.team_name}</h3>
+                <p><strong>League:</strong> ${data.team1.league}</p>
+                <p><strong>Overall Strength:</strong> ${data.team1_strength.toFixed(2)}</p>
+                <div class="coverage-bar">
+                    <div class="coverage-fill" style="width: ${Math.min(100, (data.team1_strength / Math.max(data.team1_strength, data.team2_strength)) * 100)}%"></div>
+                </div>
+            </div>
+            <div>
+                <h3>${data.team2.team_name}</h3>
+                <p><strong>League:</strong> ${data.team2.league}</p>
+                <p><strong>Overall Strength:</strong> ${data.team2_strength.toFixed(2)}</p>
+                <div class="coverage-bar">
+                    <div class="coverage-fill" style="width: ${Math.min(100, (data.team2_strength / Math.max(data.team1_strength, data.team2_strength)) * 100)}%"></div>
+                </div>
+            </div>
+        </div>
+    `;
+    document.getElementById('strength-analysis').innerHTML = strengthHtml;
+}
+
+function showLoading(show) {
+    document.getElementById('loading').style.display = show ? 'block' : 'none';
+}
+
+function showResult() {
+    document.getElementById('comparison-result').style.display = 'block';
+}
+
+function hideResult() {
+    document.getElementById('comparison-result').style.display = 'none';
+}
+
+function showError(message) {
+    document.getElementById('error-text').textContent = message;
+    document.getElementById('error-message').style.display = 'block';
+}
+
+function hideError() {
+    document.getElementById('error-message').style.display = 'none';
+}
+</script>
+{% endblock %}

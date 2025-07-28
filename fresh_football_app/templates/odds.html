@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+
+{% block title %}Betting Odds - Football Analytics{% endblock %}
+
+{% block content %}
+<h1>💰 Betting Odds Calculator</h1>
+<p style="color: #a0aec0; margin-bottom: 2rem;">Real-time odds generation using 10-parameter analysis</p>
+
+<div class="card">
+    <h2>Select Match</h2>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+        <div>
+            <label for="home-team">Home Team:</label>
+            <select id="home-team">
+                <option value="">Select Home Team</option>
+                {% for league, teams in teams_by_league.items() %}
+                    <optgroup label="{{ league }}">
+                        {% for team in teams %}
+                            <option value="{{ team.name }}">{{ team.name }}</option>
+                        {% endfor %}
+                    </optgroup>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="away-team">Away Team:</label>
+            <select id="away-team">
+                <option value="">Select Away Team</option>
+                {% for league, teams in teams_by_league.items() %}
+                    <optgroup label="{{ league }}">
+                        {% for team in teams %}
+                            <option value="{{ team.name }}">{{ team.name }}</option>
+                        {% endfor %}
+                    </optgroup>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <button onclick="calculateOdds()" class="btn">Calculate Odds</button>
+</div>
+
+<div id="odds-result" style="display: none;">
+    <div class="card">
+        <h2>Match Result Market</h2>
+        <div id="match-outcome-odds"></div>
+    </div>
+    
+    <div class="card">
+        <h2>Goals Market</h2>
+        <div id="goals-odds"></div>
+    </div>
+    
+    <div class="card">
+        <h2>Both Teams to Score</h2>
+        <div id="btts-odds"></div>
+    </div>
+    
+    <div class="card">
+        <h2>Odds Summary (JSON)</h2>
+        <pre id="odds-json" style="background: #2d3748; padding: 1rem; border-radius: 4px; overflow-x: auto; color: #e0e6ed;"></pre>
+    </div>
+</div>
+
+<div id="loading-odds" style="display: none; text-align: center; padding: 2rem;">
+    <p>Calculating odds...</p>
+</div>
+
+<div id="error-odds" style="display: none;" class="alert alert-error">
+    <p id="error-odds-text"></p>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function calculateOdds() {
+    const homeTeam = document.getElementById('home-team').value;
+    const awayTeam = document.getElementById('away-team').value;
+    
+    if (!homeTeam || !awayTeam) {
+        showOddsError('Please select both teams');
+        return;
+    }
+    
+    if (homeTeam === awayTeam) {
+        showOddsError('Please select different teams');
+        return;
+    }
+    
+    showOddsLoading(true);
+    hideOddsError();
+    hideOddsResult();
+    
+    try {
+        const response = await fetch(`/api/odds/${encodeURIComponent(homeTeam)}/${encodeURIComponent(awayTeam)}`);
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.error || 'Odds calculation failed');
+        }
+        
+        displayOdds(data, homeTeam, awayTeam);
+        showOddsResult();
+    } catch (error) {
+        showOddsError('Error: ' + error.message);
+    } finally {
+        showOddsLoading(false);
+    }
+}
+
+function displayOdds(odds, homeTeam, awayTeam) {
+    // Match outcome odds
+    const matchOutcomeHtml = `
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">${odds.match_outcome.home_win.odds}</div>
+                <div class="stat-label">${homeTeam} Win (${odds.match_outcome.home_win.probability}%)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">${odds.match_outcome.draw.odds}</div>
+                <div class="stat-label">Draw (${odds.match_outcome.draw.probability}%)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">${odds.match_outcome.away_win.odds}</div>
+                <div class="stat-label">${awayTeam} Win (${odds.match_outcome.away_win.probability}%)</div>
+            </div>
+        </div>
+    `;
+    document.getElementById('match-outcome-odds').innerHTML = matchOutcomeHtml;
+    
+    // Goals market
+    const goalsHtml = `
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="stat-card">
+                <div class="stat-value">${odds.goals_market.over_2_5.odds}</div>
+                <div class="stat-label">Over 2.5 Goals (${odds.goals_market.over_2_5.probability}%)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">${odds.goals_market.under_2_5.odds}</div>
+                <div class="stat-label">Under 2.5 Goals (${odds.goals_market.under_2_5.probability}%)</div>
+            </div>
+        </div>
+    `;
+    document.getElementById('goals-odds').innerHTML = goalsHtml;
+    
+    // BTTS market
+    const bttsHtml = `
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="stat-card">
+                <div class="stat-value">${odds.btts.yes.odds}</div>
+                <div class="stat-label">BTTS Yes (${odds.btts.yes.probability}%)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">${odds.btts.no.odds}</div>
+                <div class="stat-label">BTTS No (${odds.btts.no.probability}%)</div>
+            </div>
+        </div>
+    `;
+    document.getElementById('btts-odds').innerHTML = bttsHtml;
+    
+    // JSON display
+    document.getElementById('odds-json').textContent = JSON.stringify(odds, null, 2);
+}
+
+function showOddsLoading(show) {
+    document.getElementById('loading-odds').style.display = show ? 'block' : 'none';
+}
+
+function showOddsResult() {
+    document.getElementById('odds-result').style.display = 'block';
+}
+
+function hideOddsResult() {
+    document.getElementById('odds-result').style.display = 'none';
+}
+
+function showOddsError(message) {
+    document.getElementById('error-odds-text').textContent = message;
+    document.getElementById('error-odds').style.display = 'block';
+}
+
+function hideOddsError() {
+    document.getElementById('error-odds').style.display = 'none';
+}
+
+// Auto-populate with example teams for quick testing
+document.addEventListener('DOMContentLoaded', function() {
+    // Optionally pre-select popular matchups
+    const homeSelect = document.getElementById('home-team');
+    const awaySelect = document.getElementById('away-team');
+    
+    // Add quick selection buttons
+    const quickMatches = [
+        { home: 'Arsenal', away: 'Liverpool' },
+        { home: 'Manchester City', away: 'Chelsea' },
+        { home: 'Real Madrid', away: 'Barcelona' },
+        { home: 'Bayern München', away: 'Borussia Dortmund' }
+    ];
+    
+    const quickButtonsHtml = quickMatches.map(match => 
+        `<button onclick="setQuickMatch('${match.home}', '${match.away}')" class="btn btn-secondary" style="margin: 0.25rem;">${match.home} vs ${match.away}</button>`
+    ).join('');
+    
+    document.querySelector('.card').insertAdjacentHTML('beforeend', 
+        `<div style="margin-top: 1rem;"><h3>Quick Matches:</h3>${quickButtonsHtml}</div>`
+    );
+});
+
+function setQuickMatch(home, away) {
+    document.getElementById('home-team').value = home;
+    document.getElementById('away-team').value = away;
+}
+</script>
+{% endblock %}
