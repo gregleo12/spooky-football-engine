@@ -115,12 +115,17 @@
         }
 
         .results-section {
-            background: var(--bg-secondary);
+            background: linear-gradient(135deg, #1A1A2E 0%, #16213E 100%);
             border-radius: 20px;
             padding: 32px;
             border: 1px solid var(--border);
             display: none;
             margin-top: 40px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         }
 
         @media (max-width: 768px) {
