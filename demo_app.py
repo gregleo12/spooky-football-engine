@@ -1283,24 +1283,38 @@ def admin_dashboard():
                     const response = await fetch('/api/data-integrity/coverage');
                     const data = await response.json();
                     
-                    document.getElementById('coverage-percent').textContent = data.coverage_percentage.toFixed(1) + '%';
+                    if (data.error) {{
+                        throw new Error(data.error);
+                    }}
+                    
+                    const percentage = data.coverage_percentage || 0;
+                    document.getElementById('coverage-percent').textContent = percentage.toFixed(1) + '%';
                     
                     let details = '';
-                    for (const [league, status] of Object.entries(data.leagues)) {{
-                        const emoji = status.status === 'PASS' ? '✅' : '❌';
-                        details += `${{emoji}} ${{league}}: ${{status.actual_count}}/${{status.expected_count}}<br>`;
+                    if (data.leagues && typeof data.leagues === 'object') {{
+                        for (const [league, status] of Object.entries(data.leagues)) {{
+                            const emoji = status && status.status === 'PASS' ? '✅' : '❌';
+                            const actual = status ? status.actual_count || 0 : 0;
+                            const expected = status ? status.expected_count || 0 : 0;
+                            details += `${{emoji}} ${{league}}: ${{actual}}/${{expected}}<br>`;
+                        }}
+                    }} else {{
+                        details = 'No league data available';
                     }}
                     document.getElementById('coverage-details').innerHTML = details;
                     
                     const card = document.getElementById('data-coverage');
-                    if (data.coverage_percentage >= 100) {{
+                    if (percentage >= 100) {{
                         card.className = 'card';
                         log('✅ Data coverage: 100%', 'success');
                     }} else {{
                         card.className = 'card warning';
-                        log(`⚠️ Data coverage: ${{data.coverage_percentage.toFixed(1)}}%`, 'warning');
+                        log(`⚠️ Data coverage: ${{percentage.toFixed(1)}}%`, 'warning');
                     }}
                 }} catch (error) {{
+                    document.getElementById('coverage-percent').textContent = 'ERROR';
+                    document.getElementById('coverage-details').innerHTML = 'Failed to load coverage data';
+                    document.getElementById('data-coverage').className = 'card error';
                     log('❌ Coverage check failed: ' + error, 'error');
                 }}
             }}
@@ -1311,20 +1325,30 @@ def admin_dashboard():
                     const response = await fetch('/api/data-integrity/quality');
                     const data = await response.json();
                     
-                    document.getElementById('quality-status').textContent = data.overall_status;
+                    if (data.error) {{
+                        throw new Error(data.error);
+                    }}
+                    
+                    const status = data.overall_status || 'UNKNOWN';
+                    document.getElementById('quality-status').textContent = status;
                     
                     let details = '';
-                    for (const [checkName, result] of Object.entries(data.checks)) {{
-                        const emoji = result.status === 'PASS' ? '✅' : result.status === 'WARN' ? '⚠️' : '❌';
-                        details += `${{emoji}} ${{checkName.replace(/_/g, ' ').replace(/\\b\\w/g, l => l.toUpperCase())}}<br>`;
+                    if (data.checks && typeof data.checks === 'object') {{
+                        for (const [checkName, result] of Object.entries(data.checks)) {{
+                            const emoji = result && result.status === 'PASS' ? '✅' : result && result.status === 'WARN' ? '⚠️' : '❌';
+                            const displayName = checkName.replace(/_/g, ' ').replace(/\\b\\w/g, l => l.toUpperCase());
+                            details += `${{emoji}} ${{displayName}}<br>`;
+                        }}
+                    }} else {{
+                        details = 'No quality checks available';
                     }}
                     document.getElementById('quality-details').innerHTML = details;
                     
                     const card = document.getElementById('data-quality');
-                    if (data.overall_status === 'PASS') {{
+                    if (status === 'PASS') {{
                         card.className = 'card';
                         log('✅ Data quality: PASS', 'success');
-                    }} else if (data.overall_status === 'WARN') {{
+                    }} else if (status === 'WARN') {{
                         card.className = 'card warning';
                         log('⚠️ Data quality: WARNINGS', 'warning');
                     }} else {{
@@ -1332,6 +1356,9 @@ def admin_dashboard():
                         log('❌ Data quality: FAILURES', 'error');
                     }}
                 }} catch (error) {{
+                    document.getElementById('quality-status').textContent = 'ERROR';
+                    document.getElementById('quality-details').innerHTML = 'Failed to load quality data';
+                    document.getElementById('data-quality').className = 'card error';
                     log('❌ Quality check failed: ' + error, 'error');
                 }}
             }}
