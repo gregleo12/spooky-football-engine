@@ -3,14 +3,19 @@
 Competition-aware normalization utilities for multi-league prediction system
 Handles per-competition normalization of team strength metrics
 """
-import sqlite3
+import sys
+import os
 from typing import Dict, List, Tuple, Optional
+
+# Add project root to path for database config
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+from database_config import db_config
 
 def normalize_metric_by_competition(
     competition_id: str, 
     metric_name: str,
     team_scores: Dict[str, float],
-    conn: sqlite3.Connection
+    conn
 ) -> Dict[str, float]:
     """
     Normalize a metric within a specific competition (0-1 scale)
@@ -48,7 +53,7 @@ def normalize_metric_by_competition(
     
     return normalized_scores
 
-def get_competition_teams(competition_id: str, conn: sqlite3.Connection) -> List[Tuple[str, str, int]]:
+def get_competition_teams(competition_id: str, conn) -> List[Tuple[str, str, int]]:
     """
     Get all teams participating in a competition
     
@@ -57,9 +62,10 @@ def get_competition_teams(competition_id: str, conn: sqlite3.Connection) -> List
     """
     c = conn.cursor()
     c.execute("""
-        SELECT cts.team_id, cts.team_name, NULL as api_team_id
+        SELECT cts.team_id, cts.team_name, t.api_team_id
         FROM competition_team_strength cts 
-        WHERE cts.competition_id = ?
+        JOIN teams t ON cts.team_id = t.id
+        WHERE cts.competition_id = %s
     """, (competition_id,))
     
     return c.fetchall()
@@ -69,7 +75,7 @@ def update_competition_metric(
     metric_column: str,
     normalized_column: str,
     team_scores: Dict[str, float],
-    conn: sqlite3.Connection
+    conn
 ) -> None:
     """
     Update both raw and normalized scores for a metric in competition_team_strength table
@@ -95,31 +101,25 @@ def update_competition_metric(
         normalized_score = normalized_scores.get(team_id, 0.5)
         
         # Get team name
-        c.execute("SELECT name FROM teams WHERE id = ?", (team_id,))
+        c.execute("SELECT name FROM teams WHERE id = %s", (team_id,))
         team_name_result = c.fetchone()
         team_name = team_name_result[0] if team_name_result else "Unknown"
         
-        # Update or insert record
+        # Update existing record (teams already exist from population)
         c.execute(f"""
-            INSERT INTO competition_team_strength 
-            (id, competition_id, team_id, team_name, {metric_column}, 
-             {normalized_column}, last_updated, season)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            ON CONFLICT(competition_id, team_id, season) DO UPDATE SET
-                {metric_column} = excluded.{metric_column},
-                {normalized_column} = excluded.{normalized_column},
-                last_updated = excluded.last_updated
+            UPDATE competition_team_strength 
+            SET {metric_column} = %s, {normalized_column} = %s, last_updated = %s
+            WHERE competition_id = %s AND team_id = %s AND season = %s
         """, (
-            str(uuid.uuid4()), competition_id, team_id, team_name,
-            raw_score, normalized_score,
-            datetime.now(timezone.utc), "2024"
+            raw_score, normalized_score, datetime.now(timezone.utc),
+            competition_id, team_id, "2024"
         ))
 
 def get_competition_metric_summary(
     competition_id: str, 
     metric_column: str, 
     normalized_column: str,
-    conn: sqlite3.Connection
+    conn
 ) -> Dict:
     """
     Get summary statistics for a metric within a competition
@@ -139,7 +139,7 @@ def get_competition_metric_summary(
             AVG({normalized_column}) as avg_norm,
             COUNT(*) as team_count
         FROM competition_team_strength 
-        WHERE competition_id = ? 
+        WHERE competition_id = %s 
         AND {metric_column} IS NOT NULL
         AND {normalized_column} IS NOT NULL
     """, (competition_id,))
@@ -162,7 +162,7 @@ def get_competition_metric_summary(
         "team_count": result[6]
     }
 
-def list_competitions(conn: sqlite3.Connection) -> List[Tuple[str, str, str]]:
+def list_competitions(conn) -> List[Tuple[str, str, str]]:
     """
     Get all available competitions
     
@@ -176,7 +176,7 @@ def list_competitions(conn: sqlite3.Connection) -> List[Tuple[str, str, str]]:
 def compare_cross_competition_scores(
     team_name: str, 
     metric_column: str,
-    conn: sqlite3.Connection
+    conn
 ) -> List[Tuple[str, float, float]]:
     """
     Compare a team's scores across different competitions
@@ -197,16 +197,16 @@ def compare_cross_competition_scores(
             cts.{metric_column.replace('_score', '_normalized')} as normalized_score
         FROM competition_team_strength cts
         JOIN competitions comp ON cts.competition_id = comp.id
-        WHERE cts.team_name = ?
+        WHERE cts.team_name = %s
         AND cts.{metric_column} IS NOT NULL
         ORDER BY comp.type, comp.name
     """, (team_name,))
     
     return c.fetchall()
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     # Test the normalization utilities
-    conn = sqlite3.connect("db/football_strength.db")
+    conn = db_config.get_connection()
     
     # List all competitions
     competitions = list_competitions(conn)
@@ -215,7 +215,7 @@ if __name__ == "__main__":
         print(f"   {name} ({comp_type})")
     
     # Test metric summary for Premier League
-    pl_comp_id = next(comp_id for comp_id, name, _ in competitions if name == "Premier League")
+    pl_comp_id = next(comp_id for comp_id, name, _ in competitions if name == 'Premier League')
     
     summary = get_competition_metric_summary(
         pl_comp_id, "squad_depth_score", "squad_depth_normalized", conn

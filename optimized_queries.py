@@ -48,21 +48,20 @@ class OptimizedQueries:
             'La Liga': 2, 
             'Serie A': 3,
             'Bundesliga': 4,
-            'Ligue 1': 5,
-            'International': 6
+            'Ligue 1': 5
         }
         
         query = """
             SELECT 
                 c.name as league,
                 cts.team_name,
-                cts.local_league_strength,
-                cts.european_strength
+                cts.elo_score as local_league_strength,
+                cts.elo_score as european_strength
             FROM competition_team_strength cts
             JOIN competitions c ON cts.competition_id = c.id
-            WHERE c.name IN ('Premier League', 'La Liga', 'Serie A', 'Bundesliga', 'Ligue 1', 'International')
-            AND (cts.season = '2024' OR c.name = 'International')
-            AND cts.local_league_strength IS NOT NULL
+            WHERE c.name IN ('Premier League', 'La Liga', 'Serie A', 'Bundesliga', 'Ligue 1')
+            AND cts.season = '2024'
+            AND cts.elo_score IS NOT NULL
         """
         
         results = db_config.execute_query(query)
@@ -112,10 +111,18 @@ class OptimizedQueries:
             SELECT 
                 c.name as league,
                 cts.team_name,
-                cts.local_league_strength,
-                cts.european_strength,
+                cts.elo_score as local_league_strength,
+                cts.elo_score as european_strength,
                 cts.elo_score,
-                cts.squad_value_score
+                cts.squad_value_score,
+                cts.form_score,
+                cts.squad_depth_score,
+                cts.key_player_availability_score,
+                cts.motivation_factor_score,
+                cts.tactical_matchup_score,
+                cts.offensive_rating,
+                cts.defensive_rating,
+                cts.h2h_performance_score
             FROM competition_team_strength cts
             JOIN competitions c ON cts.competition_id = c.id
             WHERE cts.team_name = %s
@@ -130,8 +137,16 @@ class OptimizedQueries:
                 'name': result[1],
                 'local_strength': result[2],
                 'european_strength': result[3],
-                'elo': result[4],
-                'squad_value': result[5]
+                'elo_score': result[4],
+                'squad_value_score': result[5],
+                'form_score': result[6],
+                'squad_depth_score': result[7],
+                'key_player_availability_score': result[8],
+                'motivation_factor_score': result[9],
+                'tactical_matchup_score': result[10],
+                'offensive_rating': result[11],
+                'defensive_rating': result[12],
+                'h2h_performance_score': result[13]
             }
             
             # Cache result
@@ -154,22 +169,16 @@ class OptimizedQueries:
             SELECT 
                 cts.team_name,
                 c.name as league,
-                COALESCE(cts.overall_strength, 
-                    (COALESCE(cts.elo_score, 0) * 0.18 + 
-                     COALESCE(cts.squad_value_score, 0) * 0.15 + 
-                     COALESCE(cts.form_score, 0) * 0.05 + 
-                     COALESCE(cts.squad_depth_score, 0) * 0.02 + 
-                     COALESCE(cts.h2h_performance, 0) * 0.04 + 
-                     COALESCE(cts.scoring_patterns, 0) * 0.03)) as calculated_strength,
+                COALESCE(cts.elo_score, 0) as calculated_strength,
                 cts.elo_score,
                 cts.squad_value_score,
                 cts.form_score,
-                cts.confederation
+                COALESCE(cts.confederation, 'N/A') as confederation
             FROM competition_team_strength cts
             JOIN competitions c ON cts.competition_id = c.id
-            WHERE c.name IN ('Premier League', 'La Liga', 'Serie A', 'Bundesliga', 'Ligue 1', 'International')
-            AND (cts.season = '2024' OR c.name = 'International')
-            AND (cts.overall_strength IS NOT NULL OR c.name = 'International')
+            WHERE c.name IN ('Premier League', 'La Liga', 'Serie A', 'Bundesliga', 'Ligue 1')
+            AND cts.season = '2024'
+            AND cts.elo_score IS NOT NULL
             ORDER BY calculated_strength DESC
         """
         
@@ -206,12 +215,17 @@ class OptimizedQueries:
         
         query = """
             UPDATE competition_team_strength 
-            SET local_league_strength = %s, 
-                european_strength = %s,
+            SET overall_strength = %s,
                 elo_score = %s,
                 squad_value_score = %s,
                 form_score = %s,
-                squad_depth_score = %s
+                squad_depth_score = %s,
+                key_player_availability_score = %s,
+                motivation_factor_score = %s,
+                tactical_matchup_score = %s,
+                offensive_rating = %s,
+                defensive_rating = %s,
+                h2h_performance_score = %s
             WHERE team_name = %s AND competition_id = (
                 SELECT id FROM competitions WHERE name = %s
             )
@@ -219,12 +233,17 @@ class OptimizedQueries:
         
         params_list = [
             (
-                update['local_strength'], 
-                update['european_strength'],
-                update['elo_score'],
-                update['squad_value_score'], 
-                update['form_score'],
-                update['squad_depth_score'],
+                update.get('overall_strength', 0),
+                update.get('elo_score', 0),
+                update.get('squad_value_score', 0), 
+                update.get('form_score', 0),
+                update.get('squad_depth_score', 0),
+                update.get('key_player_availability_score', 0),
+                update.get('motivation_factor_score', 0),
+                update.get('tactical_matchup_score', 0),
+                update.get('offensive_rating', 0),
+                update.get('defensive_rating', 0),
+                update.get('h2h_performance_score', 0),
                 update['team_name'],
                 update['league']
             ) 
@@ -247,10 +266,10 @@ class OptimizedQueries:
         query = """
             WITH stats AS (
                 SELECT 
-                    (SELECT COUNT(DISTINCT name) FROM teams) as total_teams,
+                    (SELECT COUNT(DISTINCT team_name) FROM competition_team_strength) as total_teams,
                     (SELECT COUNT(DISTINCT name) FROM competitions) as total_competitions,
                     (SELECT COUNT(*) FROM competition_team_strength) as total_strength_records,
-                    (SELECT COUNT(DISTINCT team_name) FROM competition_team_strength WHERE local_league_strength IS NOT NULL) as teams_with_data
+                    (SELECT COUNT(DISTINCT team_name) FROM competition_team_strength WHERE elo_score IS NOT NULL) as teams_with_data
             )
             SELECT 
                 total_teams,

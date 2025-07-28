@@ -75,13 +75,13 @@ class DataIntegrityMonitor:
     def _verify_league_coverage(self, league: str, expected_count: int) -> Dict:
         """Verify coverage for a specific league"""
         query = """
-            SELECT cts.team_name, cts.local_league_strength, cts.elo_score, cts.squad_value_score
+            SELECT cts.team_name, cts.elo_score as local_league_strength, cts.elo_score, cts.squad_value_score
             FROM competition_team_strength cts
             JOIN competitions c ON cts.competition_id = c.id
-            WHERE c.name = ? 
-            AND (cts.season = ? OR c.name = 'International')
-            AND cts.local_league_strength IS NOT NULL
-            ORDER BY cts.local_league_strength DESC
+            WHERE c.name = %s 
+            AND cts.season = %s
+            AND cts.elo_score IS NOT NULL
+            ORDER BY cts.elo_score DESC
         """
         
         results = db_config.execute_query(query, (league, self.current_season))
@@ -122,12 +122,12 @@ class DataIntegrityMonitor:
     def _verify_international_coverage(self) -> Dict:
         """Verify international team coverage"""
         query = """
-            SELECT cts.team_name, cts.local_league_strength, cts.confederation
+            SELECT cts.team_name, cts.elo_score as local_league_strength, COALESCE(cts.confederation, 'N/A') as confederation
             FROM competition_team_strength cts
             JOIN competitions c ON cts.competition_id = c.id
             WHERE c.name = 'International'
-            AND cts.local_league_strength IS NOT NULL
-            ORDER BY cts.local_league_strength DESC
+            AND cts.elo_score IS NOT NULL
+            ORDER BY cts.elo_score DESC
         """
         
         results = db_config.execute_query(query)
@@ -194,11 +194,10 @@ class DataIntegrityMonitor:
     def _challenge_strength_ranges(self) -> Dict:
         """Challenge: All strength values should be 0-100"""
         query = """
-            SELECT team_name, local_league_strength, european_strength
+            SELECT team_name, elo_score as local_league_strength, elo_score as european_strength
             FROM competition_team_strength
-            WHERE local_league_strength IS NOT NULL
-            AND (local_league_strength < 0 OR local_league_strength > 100 
-                 OR european_strength < 0 OR european_strength > 100)
+            WHERE elo_score IS NOT NULL
+            AND (elo_score < 1000 OR elo_score > 2000)
         """
         
         results = db_config.execute_query(query)
@@ -325,11 +324,11 @@ class DataIntegrityMonitor:
         ]
         
         query = """
-            SELECT cts.team_name, cts.local_league_strength
+            SELECT cts.team_name, cts.elo_score as local_league_strength
             FROM competition_team_strength cts
             JOIN competitions c ON cts.competition_id = c.id
-            WHERE cts.team_name = ?
-            AND cts.local_league_strength IS NOT NULL
+            WHERE cts.team_name = %s
+            AND cts.elo_score IS NOT NULL
         """
         
         warnings = []

@@ -1,32 +1,39 @@
 #!/usr/bin/env python3
 """
 Database Configuration Module
-Handles both SQLite (local development) and PostgreSQL (production)
+Handles PostgreSQL connections for both local development and production
 """
 import os
-import sqlite3
 import psycopg2
+from psycopg2.extras import RealDictCursor
 from contextlib import contextmanager
 
 class DatabaseConfig:
     def __init__(self):
-        # Check if we're in production (PostgreSQL) or development (SQLite)
+        # Check if we're in production (Railway) or local development
         self.database_url = os.environ.get('DATABASE_URL')
-        self.use_postgresql = bool(self.database_url)
+        self.use_production = bool(self.database_url)
         
-        # SQLite fallback for local development
-        self.sqlite_path = "db/football_strength.db"
+        # Local PostgreSQL configuration
+        self.local_config = {
+            'host': 'localhost',
+            'port': '5432',
+            'database': 'football_strength',
+            'user': 'football_user',
+            'password': 'local_dev_password'
+        }
+        
+        # For backward compatibility with agents
+        self.use_postgresql = True  # Always True now
         
     def get_connection(self):
         """Get appropriate database connection"""
-        if self.use_postgresql:
-            # Railway PostgreSQL doesn't require SSL
-            # Don't use RealDictCursor to maintain compatibility with SQLite row access
+        if self.use_production:
+            # Railway PostgreSQL (production)
             return psycopg2.connect(self.database_url)
         else:
-            conn = sqlite3.connect(self.sqlite_path)
-            conn.row_factory = sqlite3.Row  # Enable dict-like access
-            return conn
+            # Local PostgreSQL (development)
+            return psycopg2.connect(**self.local_config)
     
     @contextmanager
     def get_db_connection(self):
@@ -40,14 +47,7 @@ class DatabaseConfig:
     def execute_query(self, query, params=None):
         """Execute a query and return results"""
         with self.get_db_connection() as conn:
-            if self.use_postgresql:
-                with conn.cursor() as cursor:
-                    cursor.execute(query, params or ())
-                    if cursor.description:
-                        return cursor.fetchall()
-                    return None
-            else:
-                cursor = conn.cursor()
+            with conn.cursor() as cursor:
                 cursor.execute(query, params or ())
                 if cursor.description:
                     return cursor.fetchall()
@@ -56,12 +56,7 @@ class DatabaseConfig:
     def execute_many(self, query, params_list):
         """Execute query with multiple parameter sets"""
         with self.get_db_connection() as conn:
-            if self.use_postgresql:
-                with conn.cursor() as cursor:
-                    cursor.executemany(query, params_list)
-                    conn.commit()
-            else:
-                cursor = conn.cursor()
+            with conn.cursor() as cursor:
                 cursor.executemany(query, params_list)
                 conn.commit()
     
@@ -69,13 +64,7 @@ class DatabaseConfig:
         """Execute multiple queries in a transaction"""
         with self.get_db_connection() as conn:
             try:
-                if self.use_postgresql:
-                    with conn.cursor() as cursor:
-                        for query, params in queries_and_params:
-                            cursor.execute(query, params or ())
-                        conn.commit()
-                else:
-                    cursor = conn.cursor()
+                with conn.cursor() as cursor:
                     for query, params in queries_and_params:
                         cursor.execute(query, params or ())
                     conn.commit()
@@ -85,7 +74,14 @@ class DatabaseConfig:
     
     def get_db_type(self):
         """Return database type for debugging"""
-        return "PostgreSQL" if self.use_postgresql else "SQLite"
+        return "PostgreSQL (Production)" if self.use_production else "PostgreSQL (Local)"
+    
+    def get_db_info(self):
+        """Get database connection info for debugging"""
+        if self.use_production:
+            return f"Connected to Railway PostgreSQL"
+        else:
+            return f"Connected to Local PostgreSQL at {self.local_config['host']}:{self.local_config['port']}"
 
 # Global database instance
 db_config = DatabaseConfig()
@@ -98,3 +94,11 @@ def get_database_connection():
 def execute_query(query, params=None):
     """Execute query (backward compatibility)"""
     return db_config.execute_query(query, params)
+
+# For agents that need to check database type
+def get_db_connection():
+    """Alias for backward compatibility with agents"""
+    return db_config.get_connection()
+
+# Property for agents checking database type
+use_postgresql = True  # Always True now since we only use PostgreSQL

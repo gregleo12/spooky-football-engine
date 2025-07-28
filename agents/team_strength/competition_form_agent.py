@@ -3,7 +3,6 @@
 Competition-aware form agent with per-competition normalization
 Calculates recent form (last 5-10 matches) for teams within each league
 """
-import sqlite3
 import requests
 import json
 import uuid
@@ -11,12 +10,16 @@ from datetime import datetime, timezone, timedelta
 import sys
 import os
 
+# Add project root to path for database config
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+from database_config import db_config
+
 # Add shared utilities to path
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'shared'))
 from competition_normalizer import update_competition_metric, get_competition_teams
 
-API_KEY = "53faec37f076f995841d30d0f7b2dd9d"
-BASE_URL = "https://v3.football.api-sports.io"
+API_KEY = '53faec37f076f995841d30d0f7b2dd9d'
+BASE_URL = 'https://v3.football.api-sports.io'
 HEADERS = {"x-apisports-key": API_KEY}
 SEASON = 2024
 
@@ -50,7 +53,7 @@ def fetch_team_recent_fixtures(team_api_id, team_name, league_api_id):
         completed_fixtures = []
         for fixture in fixtures:
             status = fixture.get("fixture", {}).get("status", {}).get("short")
-            if status == "FT":
+            if status == 'FT':
                 completed_fixtures.append(fixture)
         
         # Sort by date descending (most recent first)
@@ -124,13 +127,12 @@ def update_competition_form_scores(competition_name=None):
     print("📊 COMPETITION-AWARE FORM ANALYSIS")
     print("="*60)
     
-    conn = sqlite3.connect("db/football_strength.db")
+    conn = db_config.get_connection()
     c = conn.cursor()
-    c.execute("PRAGMA foreign_keys = ON;")
     
     # Get competitions to process
     if competition_name:
-        c.execute("SELECT id, name, api_league_id FROM competitions WHERE name = ?", (competition_name,))
+        c.execute("SELECT id, name, api_league_id FROM competitions WHERE name = %s", (competition_name,))
     else:
         c.execute("SELECT id, name, api_league_id FROM competitions WHERE type = 'domestic_league'")
     
@@ -185,6 +187,6 @@ def update_competition_form_scores(competition_name=None):
     
     print(f"\n✅ Competition-aware form analysis complete!")
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     # Process all domestic leagues  
     update_competition_form_scores()

@@ -3,13 +3,16 @@
 Competition-aware squad value agent with per-competition normalization
 Scrapes squad values from Transfermarkt for teams within each league
 """
-import sqlite3
 import requests
 from bs4 import BeautifulSoup
 import time
 import re
 import sys
 import os
+
+# Add project root to path for database config
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+from database_config import db_config
 
 # Add shared utilities to path
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'shared'))
@@ -28,7 +31,7 @@ def scrape_transfermarkt_squad_values(league_url_name, league_name):
     """Scrape squad values from Transfermarkt for a specific league"""
     print(f"   🌐 Scraping Transfermarkt for {league_name}...")
     
-    base_url = "https://www.transfermarkt.com"
+    base_url = 'https://www.transfermarkt.com'
     # Use the original working URLs that show team squad values
     league_ids = {
         "premier-league": "GB1",
@@ -236,13 +239,12 @@ def update_competition_squad_values(competition_name=None):
     print("💰 COMPETITION-AWARE SQUAD VALUE ANALYSIS")
     print("="*60)
     
-    conn = sqlite3.connect("db/football_strength.db")
+    conn = db_config.get_connection()
     c = conn.cursor()
-    c.execute("PRAGMA foreign_keys = ON;")
     
     # Get competitions to process
     if competition_name:
-        c.execute("SELECT id, name FROM competitions WHERE name = ?", (competition_name,))
+        c.execute("SELECT id, name FROM competitions WHERE name = %s", (competition_name,))
     else:
         c.execute("SELECT id, name FROM competitions WHERE type = 'domestic_league'")
     
@@ -308,6 +310,6 @@ def update_competition_squad_values(competition_name=None):
     
     print(f"\n✅ Competition-aware squad value analysis complete!")
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     # Process all domestic leagues
     update_competition_squad_values()

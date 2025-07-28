@@ -3,16 +3,20 @@
 Fatigue Factor Agent - Phase 1 Parameter Implementation
 Calculates fatigue factor based on fixture congestion and recent match frequency
 """
-import sqlite3
 import requests
 import json
 import uuid
 import os
+import sys
 from datetime import datetime, timezone, timedelta
 from collections import defaultdict
 
-API_KEY = "53faec37f076f995841d30d0f7b2dd9d"
-BASE_URL = "https://v3.football.api-sports.io"
+# Add project root to path for database config
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+from database_config import db_config
+
+API_KEY = '53faec37f076f995841d30d0f7b2dd9d'
+BASE_URL = 'https://v3.football.api-sports.io'
 HEADERS = {"x-apisports-key": API_KEY}
 SEASON = 2024
 FALLBACK_SCORE = 0.5
@@ -157,13 +161,13 @@ def analyze_fixture_congestion(fixtures, team_name):
     
     # Determine congestion level
     if fatigue_factor >= 0.8:
-        congestion_level = "Low congestion"
+        congestion_level = 'Low congestion'
     elif fatigue_factor >= 0.6:
-        congestion_level = "Medium congestion"
+        congestion_level = 'Medium congestion'
     elif fatigue_factor >= 0.4:
-        congestion_level = "High congestion"
+        congestion_level = 'High congestion'
     else:
-        congestion_level = "Extreme congestion"
+        congestion_level = 'Extreme congestion'
     
     return {
         "fatigue_factor": round(fatigue_factor, 3),
@@ -205,11 +209,9 @@ def update_fatigue_factors(competition_name=None):
     print("😴 FATIGUE FACTOR ANALYSIS - PHASE 1 PARAMETER")
     print("=" * 60)
     
-    conn = sqlite3.connect("db/football_strength.db")
+    conn = db_config.get_connection()
     c = conn.cursor()
-    c.execute("PRAGMA foreign_keys = ON;")
-    
-    # League ID mapping for API calls
+        # League ID mapping for API calls
     league_ids = {
         'Premier League': 39,
         'La Liga': 140,
@@ -220,7 +222,7 @@ def update_fatigue_factors(competition_name=None):
     
     # Get competitions to process
     if competition_name:
-        c.execute("SELECT id, name FROM competitions WHERE name = ?", (competition_name,))
+        c.execute("SELECT id, name FROM competitions WHERE name = %s", (competition_name,))
     else:
         c.execute("SELECT id, name FROM competitions WHERE type = 'domestic_league'")
     
@@ -328,6 +330,6 @@ def update_fatigue_factors(competition_name=None):
     
     print(f"\n✅ Fatigue factor analysis complete!")
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     # Process all domestic leagues
     update_fatigue_factors()

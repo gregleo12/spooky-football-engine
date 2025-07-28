@@ -1,0 +1,22 @@
+version: '3.8'
+services:
+  local-postgres:
+    image: postgres:15
+    container_name: football-local-db
+    environment:
+      POSTGRES_DB: football_strength
+      POSTGRES_USER: football_user
+      POSTGRES_PASSWORD: local_dev_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - local_postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U football_user -d football_strength"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  local_postgres_data:

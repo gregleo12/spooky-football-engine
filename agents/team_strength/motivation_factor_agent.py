@@ -3,16 +3,20 @@
 Motivation Factor Agent - Phase 1 Parameter Implementation
 Calculates motivation factor based on league position and situational context
 """
-import sqlite3
 import requests
 import json
 import uuid
 import os
+import sys
 from datetime import datetime, timezone
 from collections import defaultdict
 
-API_KEY = "53faec37f076f995841d30d0f7b2dd9d"
-BASE_URL = "https://v3.football.api-sports.io"
+# Add project root to path for database config
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+from database_config import db_config
+
+API_KEY = '53faec37f076f995841d30d0f7b2dd9d'
+BASE_URL = 'https://v3.football.api-sports.io'
 HEADERS = {"x-apisports-key": API_KEY}
 SEASON = 2024
 FALLBACK_SCORE = 0.5
@@ -142,11 +146,9 @@ def update_motivation_factors(competition_name=None):
     print("🔥 MOTIVATION FACTOR ANALYSIS - PHASE 1 PARAMETER")
     print("=" * 60)
     
-    conn = sqlite3.connect("db/football_strength.db")
+    conn = db_config.get_connection()
     c = conn.cursor()
-    c.execute("PRAGMA foreign_keys = ON;")
-    
-    # League ID mapping for API calls
+        # League ID mapping for API calls
     league_ids = {
         'Premier League': 39,
         'La Liga': 140,
@@ -157,7 +159,7 @@ def update_motivation_factors(competition_name=None):
     
     # Get competitions to process
     if competition_name:
-        c.execute("SELECT id, name FROM competitions WHERE name = ?", (competition_name,))
+        c.execute("SELECT id, name FROM competitions WHERE name = %s", (competition_name,))
     else:
         c.execute("SELECT id, name FROM competitions WHERE type = 'domestic_league'")
     
@@ -177,9 +179,9 @@ def update_motivation_factors(competition_name=None):
         c.execute("""
             SELECT cts.team_id, cts.team_name
             FROM competition_team_strength cts
-            WHERE cts.competition_id = ? AND cts.season = ?
+            WHERE cts.competition_id = %s AND cts.season = %s
             AND cts.team_name IS NOT NULL
-        """, (comp_id, SEASON))
+        """, (comp_id, str(SEASON)))
         
         competition_teams = c.fetchall()
         
@@ -252,13 +254,13 @@ def update_motivation_factors(competition_name=None):
                     
                     # Determine context
                     if position <= total_teams * 0.25:
-                        context = "Title race"
+                        context = 'Title race'
                     elif position <= total_teams * 0.35:
-                        context = "European spots"
+                        context = 'European spots'
                     elif position >= total_teams * 0.85:
-                        context = "Relegation battle"
+                        context = 'Relegation battle'
                     else:
-                        context = "Mid-table"
+                        context = 'Mid-table'
                     
                     motivation_data[team_id] = {
                         "team_name": team_name,
@@ -292,14 +294,14 @@ def update_motivation_factors(competition_name=None):
         for team_id, data in motivation_data.items():
             c.execute("""
                 UPDATE competition_team_strength 
-                SET motivation_factor = ?, motivation_normalized = ?,
-                    current_position = ?,
-                    last_updated = ?
-                WHERE team_id = ? AND competition_id = ? AND season = ?
+                SET motivation_factor_score = %s, motivation_factor_normalized = %s,
+                    league_position = %s,
+                    last_updated = %s
+                WHERE team_id = %s AND competition_id = %s AND season = %s
             """, (
                 data['motivation_factor'], data['motivation_factor_normalized'],
                 data['position'],
-                datetime.now(timezone.utc), team_id, comp_id, SEASON
+                datetime.now(timezone.utc), team_id, comp_id, str(SEASON)
             ))
             
             print(f"   ✅ {data['team_name']}: {data['motivation_factor']:.3f} → {data['motivation_factor_normalized']:.3f} ({data['context']})")
@@ -316,6 +318,6 @@ def update_motivation_factors(competition_name=None):
     
     print(f"\n✅ Motivation factor analysis complete!")
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     # Process all domestic leagues
     update_motivation_factors()

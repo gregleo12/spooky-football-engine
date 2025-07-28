@@ -1,0 +1,10 @@
+[build]
+# Use Metabase Docker image directly
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile.metabase"
+
+[deploy]
+startCommand = "java -jar /app/metabase.jar"
+healthcheckPath = "/api/health"
+healthcheckTimeout = 300
+restartPolicyType = "ON_FAILURE"

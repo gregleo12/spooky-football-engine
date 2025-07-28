@@ -1,0 +1,21 @@
+[build]
+# Use the Metabase Dockerfile for Railway deployment
+dockerfile = "Dockerfile.metabase"
+
+[deploy]
+# Railway deployment configuration for Metabase
+startCommand = "java -Xmx1g -jar /app/metabase.jar"
+healthcheckPath = "/api/health"
+healthcheckTimeout = 60
+restartPolicyType = "always"
+
+[env]
+# Metabase will use Railway's PostgreSQL database
+MB_DB_TYPE = "postgres"
+MB_DB_CONNECTION_URI = { $ref = "DATABASE_URL" }
+MB_JETTY_HOST = "0.0.0.0"
+MB_JETTY_PORT = { $ref = "PORT" }
+MB_ENCRYPTION_SECRET_KEY = "your-secret-key-here-change-this"
+
+# Optional: Configure admin user (will be prompted on first access)
+# MB_ADMIN_EMAIL = "admin@example.com"

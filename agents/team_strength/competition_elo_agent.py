@@ -3,7 +3,6 @@
 Competition-aware ELO agent with per-competition normalization
 Calculates ELO ratings for teams within each league competition
 """
-import sqlite3
 import requests
 import json
 import uuid
@@ -11,12 +10,16 @@ from datetime import datetime, timezone
 import sys
 import os
 
+# Add project root to path for database config
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+from database_config import db_config
+
 # Add shared utilities to path
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'shared'))
 from competition_normalizer import update_competition_metric, get_competition_teams
 
-API_KEY = "53faec37f076f995841d30d0f7b2dd9d"
-BASE_URL = "https://v3.football.api-sports.io"
+API_KEY = '53faec37f076f995841d30d0f7b2dd9d'
+BASE_URL = 'https://v3.football.api-sports.io'
 HEADERS = {"x-apisports-key": API_KEY}
 SEASON = 2024
 
@@ -63,7 +66,7 @@ def calculate_elo_ratings(fixtures, team_api_mapping):
     
     for fixture in fixtures:
         # Only process finished matches
-        if fixture.get("fixture", {}).get("status", {}).get("short") != "FT":
+        if fixture.get("fixture", {}).get("status", {}).get("short") != 'FT':
             continue
             
         teams = fixture.get("teams", {})
@@ -123,15 +126,14 @@ def update_competition_elo_ratings(competition_name=None):
     print("📈 COMPETITION-AWARE ELO ANALYSIS")
     print("="*60)
     
-    conn = sqlite3.connect("db/football_strength.db")
+    conn = db_config.get_connection()
     c = conn.cursor()
-    c.execute("PRAGMA foreign_keys = ON;")
     
     # Get competitions to process
     if competition_name:
-        c.execute("SELECT id, name, api_league_id FROM competitions WHERE name = ?", (competition_name,))
+        c.execute("SELECT id, name, api_league_id FROM competitions WHERE name = %s", (competition_name,))
     else:
-        c.execute("SELECT id, name, api_league_id FROM competitions WHERE type = 'domestic_league'")
+        c.execute("SELECT id, name, api_league_id FROM competitions WHERE type = %s", ('domestic_league',))
     
     competitions = c.fetchall()
     
@@ -193,6 +195,6 @@ def update_competition_elo_ratings(competition_name=None):
     
     print(f"\n✅ Competition-aware ELO analysis complete!")
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     # Process all domestic leagues
     update_competition_elo_ratings()

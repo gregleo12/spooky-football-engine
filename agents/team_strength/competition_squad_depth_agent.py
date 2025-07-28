@@ -3,15 +3,20 @@
 Competition-aware squad depth agent with per-competition normalization
 Supports multiple leagues and European competitions
 """
-import sqlite3
 import requests
 import json
 import uuid
 from datetime import datetime, timezone
 from collections import defaultdict
+import sys
+import os
 
-API_KEY = "53faec37f076f995841d30d0f7b2dd9d"
-BASE_URL = "https://v3.football.api-sports.io"
+# Add project root to path for database config
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+from database_config import db_config
+
+API_KEY = '53faec37f076f995841d30d0f7b2dd9d'
+BASE_URL = 'https://v3.football.api-sports.io'
 HEADERS = {"x-apisports-key": API_KEY}
 SEASON = 2024
 FALLBACK_SCORE = 0.5
@@ -230,13 +235,11 @@ def update_competition_squad_depth(competition_name=None):
     print("👥 COMPETITION-AWARE SQUAD DEPTH ANALYSIS")
     print("="*60)
     
-    conn = sqlite3.connect("db/football_strength.db")
+    conn = db_config.get_connection()
     c = conn.cursor()
-    c.execute("PRAGMA foreign_keys = ON;")
-    
-    # Get competitions to process
+        # Get competitions to process
     if competition_name:
-        c.execute("SELECT id, name FROM competitions WHERE name = ?", (competition_name,))
+        c.execute("SELECT id, name FROM competitions WHERE name = %s", (competition_name,))
     else:
         c.execute("SELECT id, name FROM competitions WHERE type = 'domestic_league'")
     
@@ -251,9 +254,9 @@ def update_competition_squad_depth(competition_name=None):
             SELECT cts.team_id, cts.team_name,
                    COALESCE(cts.squad_value_score, 0) as squad_value_millions
             FROM competition_team_strength cts
-            WHERE cts.competition_id = ? AND (cts.season = ? OR ? = 'International')
+            WHERE cts.competition_id = %s AND (cts.season = %s OR %s = 'International')
             AND cts.team_name IS NOT NULL
-        """, (comp_id, SEASON, comp_name))
+        """, (comp_id, str(SEASON), comp_name))
         
         competition_teams = c.fetchall()
         
@@ -310,19 +313,14 @@ def update_competition_squad_depth(competition_name=None):
         print(f"💾 Updating database for {comp_name}...")
         
         for team_id, data in squad_data.items():
+            # Update existing record (teams already exist from population)
             c.execute("""
-                INSERT INTO competition_team_strength 
-                (id, competition_id, team_id, team_name, squad_depth_score, 
-                 squad_depth_normalized, last_updated, season)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                ON CONFLICT(competition_id, team_id, season) DO UPDATE SET
-                    squad_depth_score = excluded.squad_depth_score,
-                    squad_depth_normalized = excluded.squad_depth_normalized,
-                    last_updated = excluded.last_updated
+                UPDATE competition_team_strength 
+                SET squad_depth_score = %s, squad_depth_normalized = %s, last_updated = %s
+                WHERE competition_id = %s AND team_id = %s AND season = %s
             """, (
-                str(uuid.uuid4()), comp_id, team_id, data['team_name'],
                 data['raw_depth_score'], data['depth_normalized'],
-                datetime.now(timezone.utc), SEASON
+                datetime.now(timezone.utc), comp_id, team_id, str(SEASON)
             ))
             
             print(f"   ✅ {data['team_name']}: {data['raw_depth_score']} → {data['depth_normalized']}")
@@ -339,6 +337,6 @@ def update_competition_squad_depth(competition_name=None):
     
     print(f"\n✅ Competition-aware squad depth analysis complete!")
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     # Process all domestic leagues
     update_competition_squad_depth()

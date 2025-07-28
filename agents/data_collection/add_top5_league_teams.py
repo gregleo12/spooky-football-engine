@@ -3,11 +3,16 @@
 Add teams from Top 5 European leagues to database
 Fetches team data from API-Football and populates teams and competition_teams tables
 """
-import sqlite3
 import requests
 import json
 import uuid
+import sys
+import os
 from datetime import datetime, timezone
+
+# Add project root to path for database config
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+from database_config import db_config
 
 API_KEY = "53faec37f076f995841d30d0f7b2dd9d"
 BASE_URL = "https://v3.football.api-sports.io"
@@ -56,7 +61,7 @@ def add_teams_to_database(conn):
     print("="*60)
     
     c = conn.cursor()
-    c.execute("PRAGMA foreign_keys = ON;")
+    # PostgreSQL doesn't need PRAGMA statements
     
     all_team_api_ids = {}
     
@@ -73,7 +78,7 @@ def add_teams_to_database(conn):
         print("-" * 40)
         
         # Get competition ID
-        c.execute("SELECT id FROM competitions WHERE name = ?", (league_name,))
+        c.execute("SELECT id FROM competitions WHERE name = %s", (league_name,))
         comp_result = c.fetchone()
         if not comp_result:
             print(f"   ⚠️ Competition {league_name} not found in database")
@@ -110,7 +115,7 @@ def add_teams_to_database(conn):
             
             try:
                 # Check if team already exists
-                c.execute("SELECT id FROM teams WHERE name = ?", (team_name,))
+                c.execute("SELECT id FROM teams WHERE name = %s", (team_name,))
                 existing_team = c.fetchone()
                 
                 if existing_team:
@@ -121,20 +126,25 @@ def add_teams_to_database(conn):
                     team_id = str(uuid.uuid4())
                     c.execute("""
                         INSERT INTO teams 
-                        (id, name, country, founded, venue_name, venue_city, venue_capacity, logo_url, team_code)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    """, (team_id, team_name, country, founded, venue_name, venue_city, 
-                          venue_capacity, team_logo, team_code))
+                        (id, name, country, api_team_id, created_at)
+                        VALUES (%s, %s, %s, %s, %s)
+                    """, (team_id, team_name, country, api_team_id, datetime.now(timezone.utc)))
                     
                     teams_added += 1
                     print(f"   ➕ Added: {team_name}")
                 
-                # Add to competition_teams mapping
+                # Add to competition_team_strength mapping (check if exists first)
                 c.execute("""
-                    INSERT OR IGNORE INTO competition_teams
-                    (id, competition_id, team_id, team_name, api_team_id, season)
-                    VALUES (?, ?, ?, ?, ?, ?)
-                """, (str(uuid.uuid4()), competition_id, team_id, team_name, api_team_id, SEASON))
+                    SELECT id FROM competition_team_strength 
+                    WHERE competition_id = %s AND team_id = %s AND season = %s
+                """, (competition_id, team_id, str(SEASON)))
+                
+                if not c.fetchone():
+                    c.execute("""
+                        INSERT INTO competition_team_strength 
+                        (id, competition_id, team_id, team_name, season)
+                        VALUES (%s, %s, %s, %s, %s)
+                    """, (str(uuid.uuid4()), competition_id, team_id, team_name, str(SEASON)))
                 
                 # Update API IDs mapping
                 all_team_api_ids[team_name] = api_team_id
@@ -178,7 +188,7 @@ def add_teams_to_database(conn):
     conn.commit()
 
 def main():
-    conn = sqlite3.connect("db/football_strength.db")
+    conn = db_config.get_connection()
     
     try:
         add_teams_to_database(conn)

@@ -3,16 +3,20 @@
 Tactical Matchup Agent - Phase 1 Parameter Implementation
 Calculates tactical style advantages based on team playing styles
 """
-import sqlite3
 import requests
 import json
 import uuid
 import os
+import sys
 from datetime import datetime, timezone
 from collections import defaultdict
 
-API_KEY = "53faec37f076f995841d30d0f7b2dd9d"
-BASE_URL = "https://v3.football.api-sports.io"
+# Add project root to path for database config
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+from database_config import db_config
+
+API_KEY = '53faec37f076f995841d30d0f7b2dd9d'
+BASE_URL = 'https://v3.football.api-sports.io'
 HEADERS = {"x-apisports-key": API_KEY}
 SEASON = 2024
 FALLBACK_SCORE = 0.5
@@ -134,17 +138,17 @@ def analyze_playing_style(stats, team_name):
     
     # Determine style profile
     if offensive_rating > 0.7 and possession_style > 0.6:
-        style_profile = "Possession-based attacking"
+        style_profile = 'Possession-based attacking'
     elif offensive_rating > 0.7 and directness > 0.6:
-        style_profile = "Direct attacking"
+        style_profile = 'Direct attacking'
     elif defensive_rating > 0.7 and possession_style > 0.6:
-        style_profile = "Possession-based defensive"
+        style_profile = 'Possession-based defensive'
     elif defensive_rating > 0.7:
-        style_profile = "Counter-attacking"
+        style_profile = 'Counter-attacking'
     elif balance_score > 0.7:
-        style_profile = "Balanced"
+        style_profile = 'Balanced'
     else:
-        style_profile = "Inconsistent"
+        style_profile = 'Inconsistent'
     
     return {
         "style_profile": style_profile,
@@ -187,11 +191,9 @@ def update_tactical_matchups(competition_name=None):
     print("⚔️ TACTICAL MATCHUP ANALYSIS - PHASE 1 PARAMETER")
     print("=" * 60)
     
-    conn = sqlite3.connect("db/football_strength.db")
+    conn = db_config.get_connection()
     c = conn.cursor()
-    c.execute("PRAGMA foreign_keys = ON;")
-    
-    # League ID mapping for API calls
+        # League ID mapping for API calls
     league_ids = {
         'Premier League': 39,
         'La Liga': 140,
@@ -202,7 +204,7 @@ def update_tactical_matchups(competition_name=None):
     
     # Get competitions to process
     if competition_name:
-        c.execute("SELECT id, name FROM competitions WHERE name = ?", (competition_name,))
+        c.execute("SELECT id, name FROM competitions WHERE name = %s", (competition_name,))
     else:
         c.execute("SELECT id, name FROM competitions WHERE type = 'domestic_league'")
     
@@ -222,9 +224,9 @@ def update_tactical_matchups(competition_name=None):
         c.execute("""
             SELECT cts.team_id, cts.team_name
             FROM competition_team_strength cts
-            WHERE cts.competition_id = ? AND cts.season = ?
+            WHERE cts.competition_id = %s AND cts.season = %s
             AND cts.team_name IS NOT NULL
-        """, (comp_id, SEASON))
+        """, (comp_id, str(SEASON)))
         
         competition_teams = c.fetchall()
         
@@ -289,12 +291,12 @@ def update_tactical_matchups(competition_name=None):
         for team_id, data in tactical_data.items():
             c.execute("""
                 UPDATE competition_team_strength 
-                SET tactical_matchup = ?, tactical_normalized = ?,
-                    last_updated = ?
-                WHERE team_id = ? AND competition_id = ? AND season = ?
+                SET tactical_matchup_score = %s, tactical_matchup_normalized = %s,
+                    last_updated = %s
+                WHERE team_id = %s AND competition_id = %s AND season = %s
             """, (
                 data['tactical_matchup'], data['tactical_matchup_normalized'],
-                datetime.now(timezone.utc), team_id, comp_id, SEASON
+                datetime.now(timezone.utc), team_id, comp_id, str(SEASON)
             ))
             
             print(f"   ✅ {data['team_name']}: {data['tactical_matchup']:.3f} → {data['tactical_matchup_normalized']:.3f} ({data['style_profile']})")
@@ -311,6 +313,6 @@ def update_tactical_matchups(competition_name=None):
     
     print(f"\n✅ Tactical matchup analysis complete!")
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     # Process all domestic leagues
     update_tactical_matchups()

@@ -1,0 +1,23 @@
+# Railway Metabase Deployment
+# Production-ready Metabase configuration for Railway hosting
+
+FROM metabase/metabase:latest
+
+# Set Railway-specific environment variables
+ENV MB_DB_TYPE=postgres
+ENV MB_DB_CONNECTION_URI=$DATABASE_URL
+ENV MB_JETTY_HOST=0.0.0.0
+ENV MB_JETTY_PORT=$PORT
+
+# Create data directory
+RUN mkdir -p /metabase-data
+
+# Expose port (Railway assigns PORT dynamically)
+EXPOSE $PORT
+
+# Health check for Railway
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+  CMD curl -f http://localhost:$PORT/api/health || exit 1
+
+# Start Metabase
+CMD ["sh", "-c", "java -jar /app/metabase.jar"]

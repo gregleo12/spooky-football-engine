@@ -3,16 +3,20 @@
 Goals Data Agent - Phase 1 Parameter Implementation
 Calculates offensive and defensive ratings based on goals scored/conceded data
 """
-import sqlite3
 import requests
 import json
 import uuid
 import os
+import sys
 from datetime import datetime, timezone
 from collections import defaultdict
 
-API_KEY = "53faec37f076f995841d30d0f7b2dd9d"
-BASE_URL = "https://v3.football.api-sports.io"
+# Add project root to path for database config
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+from database_config import db_config
+
+API_KEY = '53faec37f076f995841d30d0f7b2dd9d'
+BASE_URL = 'https://v3.football.api-sports.io'
 HEADERS = {"x-apisports-key": API_KEY}
 SEASON = 2024
 FALLBACK_SCORE = 0.5
@@ -116,11 +120,9 @@ def update_goals_data(competition_name=None):
     print("⚽ GOALS DATA ANALYSIS - PHASE 1 PARAMETERS")
     print("=" * 60)
     
-    conn = sqlite3.connect("db/football_strength.db")
+    conn = db_config.get_connection()
     c = conn.cursor()
-    c.execute("PRAGMA foreign_keys = ON;")
-    
-    # League ID mapping for API calls
+        # League ID mapping for API calls
     league_ids = {
         'Premier League': 39,
         'La Liga': 140,
@@ -131,7 +133,7 @@ def update_goals_data(competition_name=None):
     
     # Get competitions to process
     if competition_name:
-        c.execute("SELECT id, name FROM competitions WHERE name = ?", (competition_name,))
+        c.execute("SELECT id, name FROM competitions WHERE name = %s", (competition_name,))
     else:
         c.execute("SELECT id, name FROM competitions WHERE type = 'domestic_league'")
     
@@ -151,9 +153,9 @@ def update_goals_data(competition_name=None):
         c.execute("""
             SELECT cts.team_id, cts.team_name
             FROM competition_team_strength cts
-            WHERE cts.competition_id = ? AND cts.season = ?
+            WHERE cts.competition_id = %s AND cts.season = %s
             AND cts.team_name IS NOT NULL
-        """, (comp_id, SEASON))
+        """, (comp_id, str(SEASON)))
         
         competition_teams = c.fetchall()
         
@@ -244,20 +246,20 @@ def update_goals_data(competition_name=None):
         for team_id, data in goals_data.items():
             c.execute("""
                 UPDATE competition_team_strength 
-                SET offensive_rating = ?, offensive_normalized = ?,
-                    defensive_rating = ?, defensive_normalized = ?,
-                    goals_per_game = ?, goals_conceded_per_game = ?,
-                    last_updated = ?
-                WHERE team_id = ? AND competition_id = ? AND season = ?
+                SET offensive_rating = %s,
+                    defensive_rating = %s,
+                    goals_per_game = %s, goals_conceded_per_game = %s,
+                    last_updated = %s
+                WHERE team_id = %s AND competition_id = %s AND season = %s
             """, (
-                data['offensive_rating'], data['offensive_rating_normalized'],
-                data['defensive_rating'], data['defensive_rating_normalized'],
+                data['offensive_rating'],
+                data['defensive_rating'],
                 data['goals_for'] / max(1, data['matches_played']),
                 data['goals_against'] / max(1, data['matches_played']),
-                datetime.now(timezone.utc), team_id, comp_id, SEASON
+                datetime.now(timezone.utc), team_id, comp_id, str(SEASON)
             ))
             
-            print(f"   ✅ {data['team_name']}: OFF {data['offensive_rating']} → {data['offensive_rating_normalized']}, DEF {data['defensive_rating']} → {data['defensive_rating_normalized']}")
+            print(f"   ✅ {data['team_name']}: OFF {data['offensive_rating']:.3f}, DEF {data['defensive_rating']:.3f}")
         
         # Show competition summary
         off_scores = [data['offensive_rating_normalized'] for data in goals_data.values()]
@@ -273,6 +275,6 @@ def update_goals_data(competition_name=None):
     
     print(f"\n✅ Goals data analysis complete!")
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     # Process all domestic leagues
     update_goals_data()
