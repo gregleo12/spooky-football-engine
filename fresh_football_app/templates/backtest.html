@@ -173,7 +173,7 @@ document.getElementById('run-backtest').addEventListener('click', async function
         const breakdownTable = document.getElementById('breakdown-table');
         breakdownTable.innerHTML = '';
         
-        ['home_wins', 'draws', 'away_wins'].forEach(outcome => {
+        ['home_win', 'draw', 'away_win'].forEach(outcome => {
             const outcomeData = data.breakdown[outcome];
             const accuracy = ((outcomeData.correct / outcomeData.predicted) * 100).toFixed(1);
             

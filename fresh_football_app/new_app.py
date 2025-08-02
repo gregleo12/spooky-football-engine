@@ -242,26 +242,41 @@ def backtest_page():
 @app.route('/api/backtest/run')
 def api_run_backtest():
     """Run backtesting analysis on historical matches"""
-    # For now, return sample data structure
-    # Will implement with real API-Football data collection
-    sample_results = {
-        'status': 'completed',
-        'total_matches': 100,
-        'correct_predictions': 42,
-        'accuracy': 42.0,
-        'breakdown': {
-            'home_wins': {'predicted': 35, 'actual': 38, 'correct': 28},
-            'draws': {'predicted': 25, 'actual': 22, 'correct': 8}, 
-            'away_wins': {'predicted': 40, 'actual': 40, 'correct': 6}
-        },
-        'parameter_effectiveness': {
-            'elo_score': 0.78,
-            'form_score': 0.65,
-            'squad_value': 0.72,
-            'home_advantage': 0.83
-        }
-    }
-    return jsonify(sample_results)
+    try:
+        from backtesting_engine import BacktestingEngine
+        
+        # Get number of matches from query parameter (default 100)
+        num_matches = int(request.args.get('matches', 100))
+        num_matches = min(num_matches, 200)  # Cap at 200 for performance
+        
+        # Run backtesting analysis
+        engine = BacktestingEngine()
+        results = engine.run_backtest(num_matches)
+        
+        return jsonify(results)
+        
+    except Exception as e:
+        print(f"❌ Backtesting error: {e}")
+        # Fallback to sample data if real backtesting fails
+        return jsonify({
+            'status': 'error',
+            'error': str(e),
+            'total_matches': 0,
+            'correct_predictions': 0,
+            'accuracy': 0.0,
+            'breakdown': {
+                'home_win': {'predicted': 0, 'actual': 0, 'correct': 0},
+                'draw': {'predicted': 0, 'actual': 0, 'correct': 0},
+                'away_win': {'predicted': 0, 'actual': 0, 'correct': 0}
+            },
+            'parameter_effectiveness': {
+                'elo_score': 0.5,
+                'form_score': 0.5,
+                'squad_value': 0.5,
+                'home_advantage': 0.5
+            },
+            'insights': [f'Backtesting failed: {str(e)}']
+        })
 
 @app.errorhandler(404)
 def not_found(error):
