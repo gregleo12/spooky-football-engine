@@ -121,11 +121,37 @@ def api_betting_odds(team1, team2):
     home_win_prob = min(0.95, home_win_prob + home_advantage)
     
     # Calculate draw probability based on team similarity
+    # Closer teams = higher draw probability
     strength_diff = abs(comparison['team1_strength'] - comparison['team2_strength'])
-    draw_prob = max(0.10, min(0.35, 0.25 - strength_diff * 0.1))
     
-    # Normalize probabilities
-    away_win_prob = 1 - home_win_prob - draw_prob
+    # More nuanced calculation based on actual team strength differences
+    # Normalize strength_diff to a 0-1 scale (assuming max diff is around 50)
+    normalized_diff = min(strength_diff / 50.0, 1.0)
+    
+    # Draw probability ranges from 33% (evenly matched) to 20% (very different)
+    # Using a smoother curve for more realistic variation
+    draw_prob = 0.33 - (normalized_diff * 0.13)
+    
+    # Ensure draw probability stays within reasonable bounds
+    draw_prob = max(0.20, min(0.33, draw_prob))
+    
+    # Normalize probabilities to ensure they sum to 1.0
+    total_prob = home_win_prob + draw_prob
+    if total_prob > 1.0:
+        # Scale down proportionally
+        home_win_prob = home_win_prob / total_prob
+        draw_prob = draw_prob / total_prob
+    
+    away_win_prob = 1.0 - home_win_prob - draw_prob
+    
+    # Ensure away_win_prob is not negative
+    if away_win_prob < 0.05:
+        away_win_prob = 0.05
+        # Rescale home and draw
+        remaining = 0.95
+        home_ratio = home_win_prob / (home_win_prob + draw_prob)
+        home_win_prob = remaining * home_ratio
+        draw_prob = remaining * (1 - home_ratio)
     
     # Convert to decimal odds with margin
     margin = 1.05  # 5% bookmaker margin
