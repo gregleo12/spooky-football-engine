@@ -4,7 +4,6 @@ Historical Data Collector for Backtesting
 Collects past match results from API-Football for accuracy validation
 """
 
-import requests
 import json
 import time
 from datetime import datetime, timedelta
