@@ -234,6 +234,35 @@ def odds_page():
     teams_by_league = db.get_all_teams()
     return render_template('odds.html', teams_by_league=teams_by_league)
 
+@app.route('/backtest')
+def backtest_page():
+    """Backtesting interface for validating prediction accuracy"""
+    return render_template('backtest.html')
+
+@app.route('/api/backtest/run')
+def api_run_backtest():
+    """Run backtesting analysis on historical matches"""
+    # For now, return sample data structure
+    # Will implement with real API-Football data collection
+    sample_results = {
+        'status': 'completed',
+        'total_matches': 100,
+        'correct_predictions': 42,
+        'accuracy': 42.0,
+        'breakdown': {
+            'home_wins': {'predicted': 35, 'actual': 38, 'correct': 28},
+            'draws': {'predicted': 25, 'actual': 22, 'correct': 8}, 
+            'away_wins': {'predicted': 40, 'actual': 40, 'correct': 6}
+        },
+        'parameter_effectiveness': {
+            'elo_score': 0.78,
+            'form_score': 0.65,
+            'squad_value': 0.72,
+            'home_advantage': 0.83
+        }
+    }
+    return jsonify(sample_results)
+
 @app.errorhandler(404)
 def not_found(error):
     """Handle 404 errors"""

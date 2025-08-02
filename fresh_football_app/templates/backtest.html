@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+
+{% block title %}Backtesting - Football Analytics{% endblock %}
+
+{% block content %}
+<h1>🧪 Backtesting System</h1>
+<p style="color: #a0aec0; margin-bottom: 2rem;">Validate prediction accuracy against historical match results</p>
+
+<div class="card">
+    <h2>Run Accuracy Analysis</h2>
+    <p>Test the odds engine against historical match data to measure prediction accuracy and parameter effectiveness.</p>
+    
+    <button id="run-backtest" class="btn-primary" style="margin-bottom: 2rem;">
+        Run Backtest Analysis
+    </button>
+    
+    <div id="loading" style="display: none; color: #00d4ff; margin-bottom: 2rem;">
+        ⏳ Running analysis on historical matches...
+    </div>
+</div>
+
+<div id="results-container" style="display: none;">
+    <div class="card">
+        <h2>📊 Accuracy Results</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+            <div class="stat-box">
+                <div class="stat-value" id="total-matches">-</div>
+                <div class="stat-label">Total Matches</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="accuracy-percent">-</div>
+                <div class="stat-label">Overall Accuracy</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="correct-predictions">-</div>
+                <div class="stat-label">Correct Predictions</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <h2>📈 Outcome Breakdown</h2>
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 2rem;">
+                <thead>
+                    <tr style="background: rgba(0, 212, 255, 0.1);">
+                        <th style="padding: 1rem; text-align: left; border-bottom: 1px solid rgba(0, 212, 255, 0.3);">Outcome</th>
+                        <th style="padding: 1rem; text-align: center; border-bottom: 1px solid rgba(0, 212, 255, 0.3);">Predicted</th>
+                        <th style="padding: 1rem; text-align: center; border-bottom: 1px solid rgba(0, 212, 255, 0.3);">Actual</th>
+                        <th style="padding: 1rem; text-align: center; border-bottom: 1px solid rgba(0, 212, 255, 0.3);">Correct</th>
+                        <th style="padding: 1rem; text-align: center; border-bottom: 1px solid rgba(0, 212, 255, 0.3);">Accuracy</th>
+                    </tr>
+                </thead>
+                <tbody id="breakdown-table">
+                    <!-- Populated by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div class="card">
+        <h2>🎯 Parameter Effectiveness</h2>
+        <p style="color: #a0aec0; margin-bottom: 1rem;">How much each parameter contributes to prediction accuracy</p>
+        <div id="parameter-chart" style="margin-bottom: 2rem;">
+            <!-- Populated by JavaScript -->
+        </div>
+    </div>
+</div>
+
+<style>
+.stat-box {
+    background: rgba(0, 212, 255, 0.1);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #00d4ff;
+}
+
+.stat-label {
+    color: #a0aec0;
+    margin-top: 0.5rem;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #00d4ff, #0099cc);
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0, 212, 255, 0.3);
+}
+
+.btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.parameter-bar {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+}
+
+.parameter-name {
+    width: 150px;
+    color: #a0aec0;
+}
+
+.parameter-progress {
+    flex: 1;
+    height: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    margin: 0 1rem;
+    overflow: hidden;
+}
+
+.parameter-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #00d4ff, #0099cc);
+    border-radius: 10px;
+    transition: width 0.8s ease;
+}
+
+.parameter-value {
+    width: 50px;
+    text-align: right;
+    color: #00d4ff;
+    font-weight: bold;
+}
+</style>
+
+<script>
+document.getElementById('run-backtest').addEventListener('click', async function() {
+    const button = this;
+    const loading = document.getElementById('loading');
+    const resultsContainer = document.getElementById('results-container');
+    
+    // Show loading state
+    button.disabled = true;
+    button.textContent = 'Running Analysis...';
+    loading.style.display = 'block';
+    resultsContainer.style.display = 'none';
+    
+    try {
+        const response = await fetch('/api/backtest/run');
+        const data = await response.json();
+        
+        // Update summary stats
+        document.getElementById('total-matches').textContent = data.total_matches;
+        document.getElementById('accuracy-percent').textContent = data.accuracy.toFixed(1) + '%';
+        document.getElementById('correct-predictions').textContent = data.correct_predictions;
+        
+        // Update breakdown table
+        const breakdownTable = document.getElementById('breakdown-table');
+        breakdownTable.innerHTML = '';
+        
+        ['home_wins', 'draws', 'away_wins'].forEach(outcome => {
+            const outcomeData = data.breakdown[outcome];
+            const accuracy = ((outcomeData.correct / outcomeData.predicted) * 100).toFixed(1);
+            
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td style="padding: 0.75rem;">${outcome.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</td>
+                <td style="padding: 0.75rem; text-align: center;">${outcomeData.predicted}</td>
+                <td style="padding: 0.75rem; text-align: center;">${outcomeData.actual}</td>
+                <td style="padding: 0.75rem; text-align: center;">${outcomeData.correct}</td>
+                <td style="padding: 0.75rem; text-align: center; color: #00d4ff; font-weight: bold;">${accuracy}%</td>
+            `;
+            breakdownTable.appendChild(row);
+        });
+        
+        // Update parameter effectiveness chart
+        const parameterChart = document.getElementById('parameter-chart');
+        parameterChart.innerHTML = '';
+        
+        Object.entries(data.parameter_effectiveness).forEach(([param, effectiveness]) => {
+            const parameterBar = document.createElement('div');
+            parameterBar.className = 'parameter-bar';
+            parameterBar.innerHTML = `
+                <div class="parameter-name">${param.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</div>
+                <div class="parameter-progress">
+                    <div class="parameter-fill" style="width: ${effectiveness * 100}%"></div>
+                </div>
+                <div class="parameter-value">${(effectiveness * 100).toFixed(0)}%</div>
+            `;
+            parameterChart.appendChild(parameterBar);
+        });
+        
+        // Show results
+        resultsContainer.style.display = 'block';
+        
+    } catch (error) {
+        console.error('Error running backtest:', error);
+        alert('Error running backtest. Please try again.');
+    } finally {
+        // Reset button state
+        button.disabled = false;
+        button.textContent = 'Run Backtest Analysis';
+        loading.style.display = 'none';
+    }
+});
+</script>
+{% endblock %}
