@@ -234,6 +234,162 @@ At the end of each session, ask Claude to update this file with what was accompl
 - **Architecture**: Single index.html file, no complex modules
 - **Next Phase**: Ready for additional features or enhancements as needed
 
+### Session 4 - 2025-07-28 (Phase 2B - Railway PostgreSQL Synchronization)
+- **PHASE 2B COMPLETE**: Successfully synchronized complete local PostgreSQL data to Railway PostgreSQL
+- **MISSION**: Clean Railway sync from local PostgreSQL (98 teams → Railway production)
+
+#### Phase 2B Implementation Steps
+1. **Railway Connection Verified**: PostgreSQL 16.8 connection established successfully
+2. **Complete Database Cleaning**: All existing Railway tables dropped (142 teams, 184 records removed)
+3. **Fresh Schema Setup**: Clean PostgreSQL structure created with proper foreign keys and constraints
+4. **Team Data Sync**: 98 teams copied from local to Railway with full metadata
+5. **Strength Data Sync**: Complete competition_team_strength records transferred (98/98)
+
+#### Comprehensive Verification Protocol
+- **Verification 1**: Basic counts - Teams=98, Records=98 ✅
+- **Verification 2**: Parameter coverage - All 10 parameters at 98/98 ✅
+- **Verification 3**: Key teams data quality - Arsenal/Liverpool/City verified with realistic values ✅
+- **Verification 4**: Value ranges validation - All parameters within realistic football ranges ✅
+- **Verification 5**: Competition coverage - All 5 major leagues properly represented ✅
+
+#### Final Railway PostgreSQL State
+- **Teams**: 98/98 (Premier League: 20, La Liga: 20, Serie A: 20, Bundesliga: 19, Ligue 1: 19)
+- **Strength Records**: 98/98 with complete parameter coverage
+- **Data Quality**: Verified realistic values (ELO: 1322-1649, Squad Values: €33M-€1340M, Form: 0.00-3.00)
+- **Sample Verification**: Arsenal ELO=1594.6, Liverpool ELO=1614.0, Manchester City ELO=1583.5
+
+#### Technical Achievement
+- **0 → 98 teams sync**: Complete database refresh successful
+- **100% parameter coverage**: All 10 core strength parameters populated
+- **Data integrity verified**: All values within realistic football ranges
+- **Production ready**: Railway PostgreSQL ready for web application deployment
+
+#### Documentation Updates
+- Updated `PROJECT_LOG.md` with Phase 2B completion details
+- Updated `CLAUDE_WEB_CONTEXT.md` with Railway deployment status
+- Updated `CLAUDE.md` with production PostgreSQL status
+
+#### Current Status
+- **Local PostgreSQL**: Complete data source (98 teams, all parameters)
+- **Railway PostgreSQL**: Production database with identical data verified
+- **Synchronization**: Perfect 1:1 data match confirmed
+- **Next Phase**: Web application deployment and testing on Railway production
+
+### Session 5 - 2025-07-28 (Critical Bug Fix - Draw Odds)
+- **CRITICAL BUG DISCOVERED**: Draw odds showing 10.5 for ALL match combinations
+- **FRESH APP ARCHITECTURE**: Working with `fresh_football_app/` directory (not legacy demo_app.py)
+- **LIVE APP URL**: https://spooky-football-engine-production.up.railway.app/
+
+#### Bug Investigation and Fix
+1. **Bug Discovery**: User reported draw odds always showing 10.5 (9.5% probability) regardless of teams
+2. **Root Cause Found**: In `fresh_football_app/new_app.py` line 125:
+   ```python
+   draw_prob = max(0.10, min(0.35, 0.25 - strength_diff * 0.1))  # WRONG!
+   ```
+   - Formula was subtracting from base, causing most matches to hit minimum 0.10
+   - With margin 1.05, this resulted in odds = 1.05/0.10 = 10.5
+
+3. **Fix Implemented**: Replaced with dynamic calculation based on team strength differences:
+   ```python
+   normalized_diff = min(strength_diff / 50.0, 1.0)
+   draw_prob = 0.33 - (normalized_diff * 0.13)
+   draw_prob = max(0.20, min(0.33, draw_prob))
+   ```
+
+4. **Verification Results**: 
+   - Arsenal vs Liverpool: 3.85 (27.3%) ✅ - evenly matched
+   - Barcelona vs Real Madrid: 5.25 (20.0%) ✅ - larger difference
+   - Manchester City vs Southampton: 5.25 (20.0%) ✅ - very large difference
+   - All tests passed with realistic draw odds between 3.70-5.25
+
+#### Technical Details
+- **Fresh App Structure**:
+  - `fresh_football_app/new_app.py`: Main Flask application
+  - `fresh_football_app/db_interface.py`: PostgreSQL interface
+  - Clean architecture without legacy compatibility issues
+- **10-Parameter System**: Confirmed working with Railway PostgreSQL
+- **Weights**: ELO (18%), Squad Value (15%), Form (5%), etc.
+
+#### Documentation Updates
+- Updated `CLAUDE.md` with fresh app architecture and live URL
+- Updated `PROJECT_LOG.md` with bug fix details
+- Updated `CLAUDE_WEB_CONTEXT.md` with current app status
+
+#### Current Status
+- **Draw Odds**: Fixed and showing realistic variation based on team matchups
+- **Railway App**: Live and operational with corrected betting odds
+- **Next Steps**: Monitor production for any other calculation issues
+
+### Session 6 - 2025-07-28 (Phase 2C COMPLETE - Fresh App Deployment & Dark Theme)
+- **PHASE 2C IMPLEMENTATION COMPLETE**: Web App Integration with Railway PostgreSQL
+- **MISSION**: Deploy fresh web application with modern dark theme and fix all contrast issues
+
+#### Infrastructure Recovery
+1. **Railway PostgreSQL Crisis**: Database service failing with repeated connection errors
+2. **Root Cause Discovery**: Legacy `demo_app.py` was still running and bombarding Railway with incompatible SQL queries
+3. **Legacy App Elimination**: Successfully killed all legacy processes hitting Railway database
+4. **Fresh App Architecture**: Built completely new application in `fresh_football_app/` directory
+
+#### Fresh Web Application Development
+- **Created Complete Application Stack**:
+  - `fresh_football_app/new_app.py`: Modern Flask application with 10-parameter system
+  - `fresh_football_app/db_interface.py`: Clean PostgreSQL interface with Railway connection
+  - `fresh_football_app/templates/`: Complete HTML template system (base.html, admin.html, compare.html, odds.html, index.html)
+  - Railway deployment files: `Procfile`, `requirements.txt`, `runtime.txt`
+
+#### Modern Dark Theme Implementation
+- **CSS Variables System**: Implemented complete design system with neon cyan accents
+- **Color Palette Applied**:
+  - Background: Deep space blue-black (#0F0F23)
+  - Cards/Surfaces: Secondary dark (#1A1A2E)
+  - Accent: Neon cyan (#00FFF0) replacing green
+  - Text: White primary, light gray secondary
+  - Functional: Success green, error red, warning amber
+- **Enhanced UX Elements**:
+  - Hover transforms and glow effects on buttons
+  - Focus states with cyan glow on form inputs
+  - Monospace fonts for numbers and odds
+  - Smooth transitions throughout
+
+#### Contrast Optimization (Matching Odds Page Standards)
+- **Team Comparison Cards**: Fixed prediction cards with white text on colored backgrounds
+- **Parameter Tables**: Cyan values for winning metrics, white labels for readability
+- **Important Numbers**: All strength scores and odds use cyan highlighting
+- **Status Indicators**: Proper color coding for success/error states
+- **Code Blocks**: Cyan text on dark background for API endpoints
+
+#### Railway Deployment Success
+- **Production Deployment**: https://spooky-football-engine-production.up.railway.app/
+- **Database Integration**: Successfully connected to Railway PostgreSQL with 98 teams
+- **Auto-Deploy Setup**: GitHub integration for automatic deployments
+- **Health Verification**: All endpoints working with complete 10-parameter coverage
+
+#### Technical Achievements
+- **Database Connection**: Railway PostgreSQL with 98 teams across 5 leagues
+- **Admin Dashboard**: Real-time system monitoring with parameter coverage
+- **Team Comparison**: Head-to-head analysis with weighted strength scoring
+- **Betting Odds**: Match result, goals, and BTTS markets with proper calculations
+- **Modern Architecture**: Clean, maintainable code without legacy compatibility issues
+
+#### Key Features Delivered
+1. **Admin Dashboard** (`/admin`): Complete system health monitoring
+2. **Team Comparison** (`/compare`): Professional head-to-head analysis
+3. **Betting Odds Calculator** (`/odds`): Multi-market odds with realistic variation
+4. **API Endpoints**: Full REST API for teams, comparison, odds, and health
+5. **Responsive Design**: Mobile-optimized interface with professional appearance
+
+#### Documentation Updates
+- **CLAUDE.md**: Updated with fresh app as primary system
+- **PROJECT_LOG.md**: Added Phase 2C completion details
+- **CLAUDE_WEB_CONTEXT.md**: Current live app status and architecture
+
+#### Final Status - Phase 2C COMPLETE
+- **Live Application**: Professional betting analytics platform deployed
+- **Railway Integration**: Stable PostgreSQL connection with complete dataset
+- **Modern Design**: Dark theme with perfect contrast and readability
+- **Production Ready**: All functionality working with automated deployments
+- **Next Steps**: System ready for feature enhancements or production scaling
+
 ---
 
 ## Template for New Sessions

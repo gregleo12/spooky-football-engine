@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a **comprehensive football strength analysis system** with a Flask web application called "Spooky" designed for football prediction games. The system calculates competition-aware team strength scores across Top 5 European leagues plus international teams using 6 core parameters. The web application provides real-time team vs team analysis with European competition integration and interactive features.
 
-**Current Status**: Phase 2 Complete - 47% of full blueprint implemented with live web interface.
+**Current Status**: Phase 2C COMPLETE - Fresh Football Analytics Web App deployed live on Railway with modern dark theme and complete 10-parameter system.
 
 ## Environment Setup
 
@@ -22,18 +22,19 @@ pip install requests beautifulsoup4 playwright
 
 ## Database Architecture
 
-The system uses SQLite with a clean **competition-aware schema**:
+The system uses PostgreSQL with a clean **competition-aware schema** in both local development and Railway production:
 
 ### Current Tables (Production)
 - `teams`: Team information with UUID primary keys (98 teams across 5 leagues)
-- `competitions`: League/competition definitions (8 competitions: 5 domestic + 3 European)
+- `competitions`: League/competition definitions (5 domestic leagues)
 - `competition_team_strength`: **Primary strength data table** with competition-normalized metrics
 
 ### Key Files
-- `models/setup_db.py`: Database schema creation
-- `models/seed_teams.py`: Team data seeding
-- `models/create_competition_aware_schema.py`: Competition-aware schema setup
-- `db/football_strength.db`: SQLite database file
+- `database_config.py`: PostgreSQL connection management (local/Railway)
+- `models/setup_db.py`: Database schema creation (legacy SQLite)
+- `models/seed_teams.py`: Team data seeding (legacy SQLite)
+- **Local PostgreSQL**: localhost:5432/football_strength
+- **Railway PostgreSQL**: Production database with verified 98 teams
 
 ## Core Components
 
@@ -79,9 +80,9 @@ The system uses API-Football (v3.football.api-sports.io) with the following conf
 - Leagues: All Top 5 European leagues (Premier League: 39, La Liga: 140, Serie A: 135, Bundesliga: 78, Ligue 1: 61)
 - Season: 2024 (current season data)
 
-## Team Strength Parameters (47% of Full Blueprint) ✅ PHASE 2 COMPLETE
+## Team Strength Parameters (100% Working) ✅ PRODUCTION READY
 
-The system implements 6 core strength parameters with competition-aware normalization:
+The system implements 10 complete strength parameters with competition-aware normalization:
 
 ### Core Team Strength (40%)
 - **ELO Score: 18%** - Match-based team strength (normalized per-competition)
@@ -89,9 +90,13 @@ The system implements 6 core strength parameters with competition-aware normaliz
 - **Form Score: 5%** - Recent performance (last 5 matches)
 - **Squad Depth Score: 2%** - Squad size and depth measure
 
-### Historical Data Analysis (7%) ✅ NEW IN PHASE 2
-- **H2H Performance: 4%** - Head-to-head historical performance analysis
-- **Scoring Patterns: 3%** - Goal-scoring trends and defensive patterns
+### Advanced Analysis (60%) ✅ COMPLETE IN FRESH APP
+- **Key Player Availability: 10%** - Injury and availability analysis
+- **Motivation Factor: 10%** - Match importance and psychological factors
+- **Tactical Matchup: 10%** - Style compatibility analysis
+- **Offensive Rating: 10%** - Attack effectiveness metrics
+- **Defensive Rating: 10%** - Defensive solidity analysis
+- **H2H Performance: 10%** - Head-to-head historical performance
 
 ### Competition-Aware Normalization ✅ VALIDATED
 **Key Innovation**: Each parameter is normalized within its competition context:
@@ -191,11 +196,21 @@ python agents/data_collection/add_top5_league_teams.py
 - 100% data coverage with real values
 - Clean, organized codebase
 - Comprehensive validation system
+- **Railway PostgreSQL synchronized** (Phase 2B complete)
+- **98 teams verified** with all 10 parameters at 100% coverage
 
 ## Flask Web Application "Spooky" ✅ PRODUCTION READY
 
+### Current Architecture: Fresh Football App
+- **Directory**: `fresh_football_app/` - Clean rebuild without legacy issues
+- **Main Files**: 
+  - `new_app.py`: Core Flask application with fixed odds calculation
+  - `db_interface.py`: PostgreSQL interface for 10-parameter system
+- **Live URL**: https://spooky-football-engine-production.up.railway.app/
+
 ### Core Features
 - **Team vs Team Analysis**: Compare any teams across 5 leagues + international
+- **Betting Odds Engine**: Fixed draw odds calculation (was bug: always 10.5)
 - **Competition-Aware Scoring**: Automatic detection of same-league vs cross-league matches
 - **Real-Time Data**: Live API integration for form, fixtures, and H2H history
 - **Interactive Interface**: Modern web UI with responsive design
@@ -244,46 +259,38 @@ The current system represents 47% of the full blueprint. Remaining categories:
 
 This ensures continuity across sessions and maintains project history.
 
-## Production Deployment Guide ✅ READY
+## Fresh Football Analytics Web App ✅ PRODUCTION LIVE
 
-### Deployment Configuration
-- **Platform**: Railway with PostgreSQL database
-- **Repository Name**: `spooky-football-engine` (GitHub)
-- **Local Folder**: `football_strength` (no need to match)
-- **Production Files Created**:
-  - `requirements.txt`: All Python dependencies
-  - `Procfile`: Railway deployment configuration
-  - `database_config.py`: SQLite/PostgreSQL abstraction
-  - `migrate_to_postgresql.py`: Database migration script
-  - `.gitignore`: Comprehensive exclusions
+### Live Production Application
+- **URL**: https://spooky-football-engine-production.up.railway.app/
+- **Architecture**: `fresh_football_app/` directory (not legacy demo_app.py)
+- **Database**: Railway PostgreSQL with 98 teams, 10 parameters
+- **Status**: FULLY OPERATIONAL with modern dark theme
 
-### Deployment Commands
-```bash
-# 1. Create GitHub repository
-gh repo create spooky-football-engine --public --description "Football team strength analysis engine"
+### Key Features
+- **Admin Dashboard** (`/admin`): Real-time system monitoring with 100% parameter coverage
+- **Team Comparison** (`/compare`): Professional head-to-head analysis with 10 parameters
+- **Betting Odds Calculator** (`/odds`): Multi-market odds (match result, goals, BTTS)
+- **REST API**: Complete endpoints for teams, comparison, odds, and health checks
+- **Modern UI**: Professional dark theme with neon cyan accents and perfect contrast
 
-# 2. Push to GitHub
-git remote add origin https://github.com/YOUR_USERNAME/spooky-football-engine.git
-git branch -M main
-git push -u origin main
+### Fresh App Architecture
+- `fresh_football_app/new_app.py`: Main Flask application with complete feature set
+- `fresh_football_app/db_interface.py`: PostgreSQL interface optimized for 10-parameter system
+- `fresh_football_app/templates/`: Modern HTML templates with professional dark theme
+- `fresh_football_app/Procfile`: Railway deployment configuration
+- `fresh_football_app/requirements.txt`: Production dependencies
 
-# 3. Deploy to Railway
-# - Connect GitHub at railway.app
-# - Deploy from repo
-# - Add PostgreSQL service
-# - Run migration script
-```
-
-### Environment Variables (Railway)
-- `PORT`: Automatically set by Railway
-- `DATABASE_URL`: Automatically set when PostgreSQL added
-- No additional configuration needed!
+### Auto-Deploy Configuration
+- **GitHub Repository**: Connected to Railway for continuous deployment
+- **Auto-Deploy**: Pushes to main branch automatically deploy to production
+- **Environment**: `DATABASE_URL` automatically configured by Railway PostgreSQL service
 
 ## Important Notes
 
-- **Clean Architecture**: All temporary/debug files moved to `archive/`
+- **Fresh App Architecture**: Primary system is `fresh_football_app/` (not legacy demo_app.py)
+- **Production Ready**: Live application with 100% data coverage and professional design
 - **Real Data Only**: No estimated values used - all data from authoritative sources
-- **Production Status**: 100% data coverage, fully validated, ready for game integration
-- **Backup System**: Automatic database backups before major changes
-- **Credibility Verified**: All team hierarchies and values validated as realistic
-- **Deployment Ready**: All production files configured and tested
+- **Modern Design**: Professional betting platform aesthetic with perfect contrast
+- **Phase 2C Complete**: Web app integration successfully deployed and operational
+- **Auto-Deploy**: GitHub integration for continuous deployment to Railway
